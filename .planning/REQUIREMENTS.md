@@ -22,21 +22,21 @@ Requirements for the initial MVP release. Each maps to roadmap phases.
 
 ### Decisioning & Governance
 
-- [ ] **GOV-01**: Decision Agent combines deterministic rules, statistical evidence, historical incidents from Incident Memory Agent, and Gemini LLM reasoning before selecting an action (wait, alert, rollback).
+- [x] **GOV-01**: Decision Agent combines deterministic rules, statistical evidence, historical incidents from Incident Memory Agent, and Gemini LLM reasoning before selecting an action (wait, alert, rollback).
 - [ ] **GOV-02**: Automatic rollback requires all policy checks to pass: confidence threshold ≥ 0.80, severity HIGH or CRITICAL, deployment age < 30 min, stable prior version available, environment policy allows auto-rollback.
 - [ ] **GOV-03**: Every decision produces an auditable trace including evidence, confidence score, policy check results, authorization outcome, selected action, and execution result.
 - [ ] **GOV-04**: An Agent Gateway enforces identity verification, permission checks, environment constraints, and policy evaluation for all sensitive tool calls.
 
 ### Incident Memory
 
-- [ ] **MEM-01**: Incident Memory Agent stores deployment events, anomaly signals, decisions, and postmortem outcomes in Firestore with access and retention controls.
-- [ ] **MEM-02**: Decision Agent retrieves historical incidents similar to the current anomaly to inform confidence and action selection.
+- [x] **MEM-01**: Incident Memory Agent stores deployment events, anomaly signals, decisions, and postmortem outcomes in Firestore with access and retention controls.
+- [x] **MEM-02**: Decision Agent retrieves historical incidents similar to the current anomaly to inform confidence and action selection.
 - [ ] **MEM-03**: Stored incident data minimizes sensitive fields; log snippets are sanitized before persistence.
 
 ### Security & Safety
 
 - [ ] **SEC-01**: Production logs and external data are screened or sanitized before reaching LLM reasoning or tool-use paths (prompt injection prevention).
-- [ ] **SEC-02**: Model Armor protections are applied to Gemini API calls for sensitive-data leakage prevention.
+- [x] **SEC-02**: Model Armor protections are applied to Gemini API calls for sensitive-data leakage prevention.
 - [ ] **SEC-03**: Sensitive tool calls (rollback execution, Firestore writes) require gateway authorization and are logged in the decision trace.
 
 ### Rollback & Recovery
@@ -104,15 +104,15 @@ Phase assignments will be finalized when ROADMAP.md phases are planned. Prelimin
 | FLEET-02 | Phase 1 | Complete |
 | FLEET-03 | Phase 3 | Pending |
 | FLEET-04 | Phase 3 | Complete |
-| GOV-01 | Phase 3 | Pending |
+| GOV-01 | Phase 3 | Complete |
 | GOV-02 | Phase 3 | Pending |
 | GOV-03 | Phase 4 | Pending |
 | GOV-04 | Phase 3 | Pending |
-| MEM-01 | Phase 2 | Pending |
-| MEM-02 | Phase 3 | Pending |
+| MEM-01 | Phase 2 | Complete |
+| MEM-02 | Phase 3 | Complete |
 | MEM-03 | Phase 2 | Pending |
 | SEC-01 | Phase 2 | Pending |
-| SEC-02 | Phase 3 | Pending |
+| SEC-02 | Phase 3 | Complete |
 | SEC-03 | Phase 3 | Pending |
 | ROLL-01 | Phase 4 | Pending |
 | ROLL-02 | Phase 4 | Pending |

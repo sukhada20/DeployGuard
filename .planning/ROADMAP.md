@@ -9,7 +9,7 @@ DeployGuard is built in six focused phases: first establishing the project skele
 - [x] **Phase 1: Project Foundation & Simulation Layer** — Python FastAPI skeleton, agent base classes, Agent Registry, Cloud Deploy/Monitoring/Logging stub interfaces, local dev harness (completed 2026-08-29)
 - [x] **Phase 2: Anomaly Detection & Incident Memory** — Deploy Monitor Agent, baseline comparison, Firestore incident storage, log sanitization (completed 2026-08-29)
 - [x] **Phase 3: Decisioning Engine & Governance** — Decision Agent, Gemini LLM integration, Agent Gateway, IAM identities, Model Armor, policy evaluation (completed 2026-08-29)
-- [ ] **Phase 4: Google Cloud Platform & ADK Fleet Modernization** — Google Agents CLI / ADK integration, Vertex AI RAG / Vector Search incident memory, Cloud Monitoring/Logging telemetry connectors, GCP IAM/Workload Identity boundaries
+- [x] **Phase 4: Google Cloud Platform & ADK Fleet Modernization** — Google Agents CLI / ADK integration, Vertex AI RAG / Vector Search incident memory, Cloud Monitoring/Logging telemetry connectors, GCP IAM/Workload Identity boundaries (completed 2026-08-30)
 - [ ] **Phase 5: Rollback Execution & Recovery Verification** — Rollback Agent, Cloud Deploy integration, post-rollback metric verification, decision trace output, OpenTelemetry
 - [ ] **Phase 6: Postmortem Generation & Operator Dashboard** — Postmortem Agent, React/TypeScript dashboard, fleet overview, agent activity log, decision trace viewer
 - [ ] **Phase 7: End-to-End Demo & Polish** — Scripted failure injection, full flow integration test, demo runbook, README, deployment guide
@@ -118,10 +118,10 @@ Plans:
 
 Plans:
 
-- [ ] 04-01: ADK fleet migration — refactor agents and tools to Google ADK declarative architecture and lifecycle hooks
-- [ ] 04-02: Vertex AI RAG & semantic incident memory — vector embeddings, similarity search, and Model Armor integration
-- [ ] 04-03: Google Cloud native service connectors — live Cloud Monitoring (PromQL), Cloud Logging (LQL), and Cloud Deploy client adapters
-- [ ] 04-04: Automated agent evaluation harness — golden test datasets, `agents-cli eval` configuration, and IAM least-privilege matrix
+- [x] 04-01: ADK fleet migration — refactor agents and tools to Google ADK declarative architecture and lifecycle hooks
+- [x] 04-02: Vertex AI RAG & semantic incident memory — vector embeddings, similarity search, and Model Armor integration
+- [x] 04-03: Google Cloud native service connectors — live Cloud Monitoring (PromQL), Cloud Logging (LQL), and Cloud Deploy client adapters
+- [x] 04-04: Automated agent evaluation harness — golden test datasets, `agents-cli eval` configuration, and IAM least-privilege matrix
 
 ### Phase 5: Rollback Execution & Recovery Verification
 
@@ -194,7 +194,7 @@ Plans:
 | 1. Project Foundation & Simulation Layer | 5/5 | Complete    | 2026-08-29 |
 | 2. Anomaly Detection & Incident Memory | 4/4 | Complete    | 2026-08-29 |
 | 3. Decisioning Engine & Governance | 4/4 | Complete    | 2026-08-29 |
-| 4. Google Cloud Platform & ADK Fleet Modernization | 0/4 | Not started | - |
+| 4. Google Cloud Platform & ADK Fleet Modernization | 4/4 | Complete    | 2026-08-30 |
 | 5. Rollback Execution & Recovery Verification | 0/3 | Not started | - |
 | 6. Postmortem Generation & Operator Dashboard | 0/4 | Not started | - |
 | 7. End-to-End Demo & Polish | 0/4 | Not started | - |
