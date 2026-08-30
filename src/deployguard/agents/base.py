@@ -81,10 +81,16 @@ class BaseDeployGuardAgent(BaseAgent):
     async def _run_async_impl(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
-        """Execute agent logic."""
+        """Execute agent logic with distributed tracing instrumentation."""
         logger.info("Agent %s (%s) invoked", self.name, self.agent_id)
-        async for event in self._execute(ctx):
-            yield event
+        from deployguard.telemetry.tracer import inject_trace_context, trace_agent_step
+
+        with trace_agent_step(self.name, agent_id=self.agent_id):
+            if "trace_context" not in ctx.session.state:
+                ctx.session.state["trace_context"] = {}
+            inject_trace_context(ctx.session.state["trace_context"])
+            async for event in self._execute(ctx):
+                yield event
 
     @abstractmethod
     def _execute(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
