@@ -1,15 +1,51 @@
-"""Base class for all DeployGuard agents."""
+"""Base classes for all DeployGuard agents.
+
+Provides two base agent patterns:
+
+1. ``BaseDeployGuardAgent`` — extends ``google.adk.agents.BaseAgent`` for
+   custom orchestration logic with full control over the event loop.
+
+2. ``create_llm_agent()`` — factory that wraps ``google.adk.agents.LlmAgent``
+   with DeployGuard-standard model selection and gateway tool registration.
+
+Model selection
+---------------
+Set ``DEPLOYGUARD_MODEL_FAST`` to override the default fast model (gemini-2.5-flash).
+Set ``DEPLOYGUARD_MODEL_DECISION`` to override the decision model (gemini-2.5-pro).
+"""
+
+from __future__ import annotations
 
 import logging
+import os
 from abc import abstractmethod
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 
-from google.adk.agents import BaseAgent, InvocationContext
+from google.adk.agents import BaseAgent, InvocationContext, LlmAgent
 from google.adk.events.event import Event
 
 from deployguard.state.workflow import DeploymentWorkflowState
 
 logger = logging.getLogger(__name__)
+
+# --------------------------------------------------------------------------- #
+# Model configuration                                                          #
+# --------------------------------------------------------------------------- #
+
+DEFAULT_MODEL_FAST: str = os.environ.get(
+    "DEPLOYGUARD_MODEL_FAST", "gemini-2.5-flash"
+)
+"""Default model for fast, high-throughput agents (monitoring, memory, postmortem)."""
+
+DEFAULT_MODEL_DECISION: str = os.environ.get(
+    "DEPLOYGUARD_MODEL_DECISION", "gemini-2.5-pro"
+)
+"""Default model for the decision agent (complex reasoning, low-latency tolerance)."""
+
+
+# --------------------------------------------------------------------------- #
+# BaseDeployGuardAgent — custom ADK BaseAgent subclass                         #
+# --------------------------------------------------------------------------- #
 
 
 class BaseDeployGuardAgent(BaseAgent):
@@ -20,8 +56,8 @@ class BaseDeployGuardAgent(BaseAgent):
     - Agent identity enforcement (agent_id must match registry)
     - Lifecycle logging
 
-    Note: ADK 2.x requires `name` to be a valid Python identifier (underscores,
-    no hyphens). The `agent_id` field maps to the Agent Registry's agent_id.
+    Note: ADK 2.x requires ``name`` to be a valid Python identifier (underscores,
+    no hyphens). The ``agent_id`` field maps to the Agent Registry's agent_id.
     """
 
     # Declared as a Pydantic model field so ADK's __init__ can accept it
@@ -54,3 +90,48 @@ class BaseDeployGuardAgent(BaseAgent):
     def _execute(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
         """Agent-specific execution logic. Override in each specialized agent."""
         ...
+
+
+# --------------------------------------------------------------------------- #
+# create_llm_agent — LlmAgent factory for tool-using agents                   #
+# --------------------------------------------------------------------------- #
+
+
+def create_llm_agent(
+    name: str,
+    instruction: str,
+    tools: list[Callable] | None = None,
+    model: str | None = None,
+    agent_id: str = "",
+) -> LlmAgent:
+    """Factory for creating a DeployGuard LlmAgent with standard configuration.
+
+    Args:
+        name: ADK agent name (must be a valid Python identifier).
+        instruction: System instruction for the LLM.
+        tools: List of callable tools to register with the agent.
+        model: Gemini model name. Defaults to DEFAULT_MODEL_FAST.
+        agent_id: DeployGuard registry agent ID (stored in description for tracing).
+
+    Returns:
+        A configured ``LlmAgent`` instance ready for invocation.
+    """
+    resolved_model = model or DEFAULT_MODEL_FAST
+    description = (
+        f"DeployGuard agent: {agent_id}" if agent_id else f"DeployGuard agent: {name}"
+    )
+
+    logger.info(
+        "Creating LlmAgent name=%s model=%s agent_id=%s",
+        name,
+        resolved_model,
+        agent_id,
+    )
+
+    return LlmAgent(
+        name=name,
+        model=resolved_model,
+        instruction=instruction,
+        tools=tools or [],
+        description=description,
+    )
