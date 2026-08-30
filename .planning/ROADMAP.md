@@ -146,14 +146,12 @@ Plans:
 ### Phase 6: Postmortem Generation & Operator Dashboard
 
 **Goal**: Postmortem Agent generates auditable postmortems. React dashboard shows fleet overview, deployment health, agent activity, decision traces, and agent registry.
-**Goal**: Postmortem Agent generates auditable postmortems. Next.js dashboard (App Router, TypeScript, Tailwind CSS) shows fleet overview, deployment health, agent activity, decision traces, and agent registry.
 **Depends on**: Phase 5
 **Requirements**: POST-01, POST-02
 **Success Criteria** (what must be TRUE):
 
   1. Postmortem Agent generates a structured postmortem document (timeline, evidence, decisions, actions, outcomes) after each recovery or failed rollback.
   2. Dashboard loads and displays live fleet status, deployment health, and agent activity without errors.
-  2. Next.js dashboard loads and displays live fleet status, deployment health, and agent activity without errors.
   3. Decision trace viewer renders a complete decision trace from Firestore for any deployment event.
   4. Agent registry view lists all agents with identity, role, and last-active status.
 
@@ -164,7 +162,6 @@ Plans:
 - [ ] 06-01: Postmortem Agent — document template, data assembly from workflow state and decision traces, Firestore write
 - [ ] 06-02: Dashboard backend API — FastAPI routes for fleet status, deployment events, agent activity, decision traces, agent registry
 - [ ] 06-03: Dashboard frontend — React/TypeScript app, fleet overview, deployment health panel, agent activity log
-- [ ] 06-03: Dashboard frontend — Next.js (App Router, TypeScript) app, fleet overview, deployment health panel, agent activity log
 - [ ] 06-04: Decision trace viewer and agent registry UI — trace detail view, registry table, Tailwind CSS styling
 
 ### Phase 7: End-to-End Demo & Polish
