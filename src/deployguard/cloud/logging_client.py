@@ -115,3 +115,4 @@ class LiveCloudLoggingClient:
         elif isinstance(payload, list):
             return [self._sanitize_payload(x) for x in payload]
         return payload
+

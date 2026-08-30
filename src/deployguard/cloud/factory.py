@@ -91,3 +91,4 @@ def get_document_store() -> Any:
     except Exception as e:
         logger.warning("Failed initializing Live Firestore client, falling back to stub: %s", e)
         return MockFirestore()
+

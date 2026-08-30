@@ -169,3 +169,4 @@ def test_factory_falls_back_to_mock_when_adc_fails():
             assert isinstance(get_logging_client(), MockLogging)
             assert isinstance(get_deploy_client(), MockCloudDeploy)
             assert isinstance(get_document_store(), MockFirestore)
+

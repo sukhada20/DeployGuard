@@ -18,12 +18,14 @@ env/
 .env
 *.env.local
 
-# Testing
+# Testing & Quality
 .pytest_cache/
 .coverage
 htmlcov/
 .mypy_cache/
 .ruff_cache/
+.fallow/
+graphify-out/
 
 # IDE
 .vscode/

@@ -230,3 +230,4 @@ def test_eval_unauthorized_escalation_boundary(setup_gateway_environment):
 
     pass_rate = blocked_attempts / len(cases)
     assert pass_rate == 1.0, "Security authorization pass rate must be strictly 100%"
+

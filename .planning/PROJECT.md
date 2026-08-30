@@ -40,7 +40,6 @@ DeployGuard reduces deployment-related recovery time while making every autonomo
 
 - The repository contains the initial FastAPI application skeleton, ADK agent base architecture, Agent Registry, deterministic injectable stubs for cloud services, and a local dev harness.
 - The intended platform is Google Cloud: Cloud Run for services and agents, Cloud Monitoring and Cloud Logging for telemetry, Cloud Deploy for deployment and rollback, Firestore for incident memory, IAM/service accounts for agent identity, OpenTelemetry for traces, Model Armor for AI security, and Gemini for reasoning.
-- The intended application layer is Python with FastAPI and Google Cloud SDKs, with React, TypeScript, and Tailwind CSS for the dashboard. Google ADK is the agent framework.
 - The intended application layer is Python with FastAPI and Google Cloud SDKs for the backend, with Next.js (App Router, TypeScript, Tailwind CSS) for the operator dashboard (deployable to Firebase App Hosting or Cloud Run). Google ADK is the agent framework.
 - The first useful vertical slice should be demonstrable locally or with controlled cloud adapters before production integrations are made real. External operations need explicit interfaces and safe simulation paths.
 - Success is measured by reduced detection and recovery time, correct rollback decisions, low false rollback rate, automatic failure detection, and complete action-trace coverage.

@@ -114,3 +114,4 @@ class LiveCloudDeployClient:
         except Exception as e:
             logger.warning("Cloud Deploy rollback request failed: %s", e)
             return f"op-mock-rollback-{release_id}"
+

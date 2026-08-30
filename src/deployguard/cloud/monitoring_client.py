@@ -128,3 +128,4 @@ class LiveCloudMonitoringClient:
         """Fetch the baseline value for a metric dimension."""
         val = await self.get_metric(metric_name)
         return val * 0.8
+
