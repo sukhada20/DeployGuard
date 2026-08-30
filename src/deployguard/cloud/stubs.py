@@ -35,6 +35,63 @@ class MockFirestore:
             if key.startswith(f"{collection}/")
         ]
 
+    async def find_nearest_in_collection(
+        self,
+        collection: str,
+        filter_field: str,
+        filter_value: Any,
+        vector_field: str,
+        query_vector: list[float],
+        limit: int,
+        threshold: float = 0.70,
+    ) -> list[dict[str, Any]]:
+        """Mock implementation of Firestore VectorQuery find_nearest.
+
+        Filters by field equality first (pre-filter), then ranks by
+        cosine similarity descending. Only returns documents above threshold.
+
+        Args:
+            collection: Collection name to search.
+            filter_field: Metadata field name for pre-filtering.
+            filter_value: Value to match for pre-filtering.
+            vector_field: Field name storing the embedding vector.
+            query_vector: Query embedding vector.
+            limit: Maximum number of results to return.
+            threshold: Minimum cosine similarity threshold (default 0.70).
+
+        Returns:
+            List of matching document dicts, sorted by similarity descending.
+        """
+        from deployguard.cloud.embeddings import cosine_similarity
+
+        # 1. Get all docs in collection
+        candidates = [
+            data
+            for key, data in self.documents.items()
+            if key.startswith(f"{collection}/")
+        ]
+
+        # 2. Pre-filter by metadata field
+        filtered = [
+            doc for doc in candidates
+            if doc.get(filter_field) == filter_value
+        ]
+
+        # 3. Compute cosine similarity and filter by threshold
+        scored: list[tuple[float, dict[str, Any]]] = []
+        for doc in filtered:
+            emb = doc.get(vector_field)
+            if not emb:
+                continue
+            score = cosine_similarity(query_vector, emb)
+            if score >= threshold:
+                scored.append((score, doc))
+
+        # 4. Sort descending by score and return top-limit
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return [doc for _, doc in scored[:limit]]
+
+
 
 class MockMonitoring:
     """Stubs Google Cloud Monitoring (Metrics) interactions."""
