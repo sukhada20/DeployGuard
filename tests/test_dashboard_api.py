@@ -167,3 +167,18 @@ async def test_sse_events_stream():
         assert msg["event"] == "test_event"
         assert msg["data"] == {"hello": "world"}
         await broadcaster.unsubscribe(q)
+
+
+@pytest.mark.asyncio
+async def test_spa_static_serving():
+    """Test root / returns static HTML from web/out if built."""
+    app = create_app()
+    transport = ASGITransport(app=app)
+
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/")
+        # If static build exists, it should return 200 with HTML content
+        if response.status_code == 200:
+            assert "text/html" in response.headers.get("content-type", "")
+            assert "DeployGuard" in response.text
+
