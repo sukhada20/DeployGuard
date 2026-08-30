@@ -1,0 +1,65 @@
+apiVersion: google.dev/v1alpha
+kind: AgentModule
+name: deployguard
+description: "DeployGuard — AI-powered deployment safety and rollback agent fleet"
+
+agents:
+  - name: decision_agent
+    displayName: "Decision Agent"
+    description: "Analyzes deployment metrics and decides rollback vs continue"
+    model: gemini-2.5-pro
+    instruction: |
+      You are the DeployGuard Decision Agent. Analyze deployment health metrics and
+      incident history to make rollback decisions. Apply the configured rollback policy
+      thresholds. Be conservative — when in doubt, prefer rollback over continued degradation.
+      Always cite the specific metrics that informed your decision.
+    tools:
+      - query_monitoring_metrics
+      - fetch_historical_incidents
+
+  - name: rollback_agent
+    displayName: "Rollback Agent"
+    description: "Executes deployment rollback operations via Cloud Deploy"
+    model: gemini-2.5-flash
+    instruction: |
+      You are the DeployGuard Rollback Agent. Execute rollback operations when authorized
+      by the Decision Agent. Verify rollback success by checking Cloud Deploy status after
+      execution. Always record the rollback as an incident.
+    tools:
+      - request_deployment_rollback
+      - record_incident
+
+  - name: deploy_monitor_agent
+    displayName: "Deploy Monitor Agent"
+    description: "Monitors active deployments for anomalies"
+    model: gemini-2.5-flash
+    instruction: |
+      You are the DeployGuard Deploy Monitor Agent. Continuously monitor deployment metrics
+      for anomalies. Report AnomalySignals with severity ratings to the Decision Agent.
+      Check error rates, latency p99, and request volume.
+    tools:
+      - query_monitoring_metrics
+
+  - name: incident_memory_agent
+    displayName: "Incident Memory Agent"
+    description: "Manages incident history and retrieval via vector search"
+    model: gemini-2.5-flash
+    instruction: |
+      You are the DeployGuard Incident Memory Agent. Store and retrieve deployment incidents
+      using vector similarity search. Match current deployment context against historical
+      incidents to inform decision-making. Retrieve top-3 similar incidents.
+    tools:
+      - fetch_historical_incidents
+      - record_incident
+
+  - name: postmortem_agent
+    displayName: "Postmortem Agent"
+    description: "Generates structured postmortem reports"
+    model: gemini-2.5-flash
+    instruction: |
+      You are the DeployGuard Postmortem Agent. Generate structured postmortem documents
+      for completed incidents. Include root cause analysis, timeline, impact assessment,
+      and preventive recommendations.
+    tools:
+      - fetch_historical_incidents
+      - record_incident
