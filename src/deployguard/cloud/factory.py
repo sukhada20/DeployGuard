@@ -12,6 +12,7 @@ import os
 from typing import Any
 
 from deployguard.cloud.deploy_client import LiveCloudDeployClient
+from deployguard.cloud.firestore_client import LiveFirestoreStore
 from deployguard.cloud.logging_client import LiveCloudLoggingClient
 from deployguard.cloud.monitoring_client import LiveCloudMonitoringClient
 from deployguard.cloud.stubs import (
@@ -99,9 +100,7 @@ def get_document_store() -> Any:
         )
         return MockFirestore()
     try:
-        from google.cloud import firestore
-
-        return firestore.AsyncClient()
+        return LiveFirestoreStore()
     except Exception as e:
         logger.warning(
             "Failed initializing Live Firestore client, falling back to stub: %s", e

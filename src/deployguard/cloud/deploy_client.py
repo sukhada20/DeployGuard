@@ -103,7 +103,6 @@ class LiveCloudDeployClient:
         )
         try:
             _ = self._get_client()
-            # Construct parent name: projects/{project}/locations/{location}/deliveryPipelines/{pipeline}/releases/{release}
             parent = (
                 f"projects/{self.project_id}/locations/{self.location}/"
                 f"deliveryPipelines/{delivery_pipeline_id}/releases/{release_id}"
