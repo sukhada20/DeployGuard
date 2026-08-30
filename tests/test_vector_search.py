@@ -199,14 +199,22 @@ async def test_find_similar_incidents_respects_threshold():
     store = MockFirestore()
     agent = IncidentMemoryAgent(document_store=store)
 
-    await agent.store_incident(
+    # Use the exact text that store_incident will embed:
+    # embed_text = "svc-payments payment high latency" (service_name + summary)
+    exact_embed_text = "svc-payments payment high latency"
+    await store.set_document(
+        "incidents",
         "inc-abc",
-        {"service_name": "svc-payments", "summary": "payment high latency"},
+        {
+            "service_name": "svc-payments",
+            "summary": "payment high latency",
+            "embedding": mock_embedding(exact_embed_text),
+        },
     )
 
     results = await agent.find_similar_incidents(
         service_name="svc-payments",
-        query_text="payment high latency",
+        query_text=exact_embed_text,  # same text → cosine similarity == 1.0
         k=3,
     )
     assert len(results) >= 1
