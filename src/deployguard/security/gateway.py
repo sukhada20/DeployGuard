@@ -1,7 +1,19 @@
 from typing import Any
 
 from deployguard.cloud.interfaces import DocumentStore
-from deployguard.registry.store import AgentRegistry
+from deployguard.cloud.stubs import MockFirestore
+from deployguard.registry.seed import SEED_AGENTS
+from deployguard.registry.store import AgentRegistry, seed_registry
+
+
+class ActionDeniedError(PermissionError):
+    """Raised when an agent attempts an action outside its authorized IAM permission boundary."""
+
+    def __init__(self, agent_id: str, action: str, reason: str = "Action not authorized for agent") -> None:
+        self.agent_id = agent_id
+        self.action = action
+        self.reason = reason
+        super().__init__(f"AgentGateway DENIED: agent '{agent_id}' cannot execute '{action}'. Reason: {reason}")
 
 
 class PolicyEngine:
@@ -37,13 +49,27 @@ class PolicyEngine:
 class AgentGateway:
     """Enforces agent identity authorization and logs traces."""
 
-    def __init__(self, registry: AgentRegistry, db: DocumentStore) -> None:
-        self.registry = registry
-        self.db = db
+    def __init__(
+        self,
+        registry: AgentRegistry | None = None,
+        db: DocumentStore | None = None,
+    ) -> None:
+        self.registry = registry if registry is not None else seed_registry(SEED_AGENTS)
+        self.db = db if db is not None else MockFirestore()
 
-    async def authorize_action(self, agent_id: str, action: str) -> bool:
-        """Authorizes action based on registry permissions."""
+    def is_action_allowed(self, agent_id: str, action: str) -> bool:
+        """Synchronous check if action is allowed by registry."""
         agent = self.registry.get(agent_id)
         if not agent or agent.status != "ACTIVE":
             return False
         return action in agent.permissions
+
+    async def authorize_action(self, agent_id: str, action: str) -> bool:
+        """Authorizes action based on registry permissions."""
+        return self.is_action_allowed(agent_id, action)
+
+    def enforce_action(self, agent_id: str, action: str) -> None:
+        """Enforces permission and raises ActionDeniedError if unauthorized."""
+        if not self.is_action_allowed(agent_id, action):
+            raise ActionDeniedError(agent_id, action, f"Agent '{agent_id}' lacks permission '{action}'")
+

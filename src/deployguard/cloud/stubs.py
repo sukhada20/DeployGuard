@@ -97,15 +97,24 @@ class MockMonitoring:
 
     def __init__(self) -> None:
         self.metric_values: dict[str, float] = {}
+        self.baseline_values: dict[str, float] = {}
 
     def set_metric(self, metric_name: str, value: float) -> None:
         self.metric_values[metric_name] = value
+
+    def set_baseline(self, metric_name: str, value: float) -> None:
+        self.baseline_values[metric_name] = value
+
+    def clear(self) -> None:
+        self.metric_values.clear()
+        self.baseline_values.clear()
 
     async def get_metric(self, metric_name: str) -> float:
         return self.metric_values.get(metric_name, 0.0)
 
     async def get_baseline(self, metric_name: str) -> float:
-        # Stub: returns a lower baseline to simulate anomalies
+        if metric_name in self.baseline_values:
+            return self.baseline_values[metric_name]
         return self.metric_values.get(metric_name, 0.0) * 0.8
 
 
@@ -114,6 +123,9 @@ class MockCloudDeploy:
 
     def __init__(self) -> None:
         self.rollbacks: list[dict[str, Any]] = []
+
+    def clear(self) -> None:
+        self.rollbacks.clear()
 
     async def execute_rollback(
         self, release_id: str, target_id: str, delivery_pipeline_id: str
@@ -139,7 +151,11 @@ class MockLogging:
     def add_log(self, payload: dict[str, Any]) -> None:
         self.logs.append(payload)
 
+    def clear(self) -> None:
+        self.logs.clear()
+
     async def query_logs(self, filter_str: str) -> list[dict[str, Any]]:
         # In a real implementation this would parse the filter.
         # Here we just return all seeded logs for simplicity.
         return self.logs
+

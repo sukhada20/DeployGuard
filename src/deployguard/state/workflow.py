@@ -78,9 +78,13 @@ class PostmortemReport(BaseModel):
         for metric, delta in self.metric_deltas.items():
             base = delta.get("baseline", "N/A")
             current = delta.get("current", "N/A")
-            ratio = delta.get("ratio", 1.0)
-            pct = f"+{(ratio - 1.0) * 100:.1f}%" if isinstance(ratio, (int, float)) and ratio >= 1 else f"{(ratio - 1.0) * 100:.1f}%"
-            status = "ANOMALY" if isinstance(ratio, (int, float)) and ratio > 1.2 else "NORMAL"
+            ratio = delta.get("ratio")
+            if isinstance(ratio, (int, float)):
+                pct = f"+{(ratio - 1.0) * 100:.1f}%" if ratio >= 1.0 else f"{(ratio - 1.0) * 100:.1f}%"
+                status = "ANOMALY" if ratio > 1.2 else "NORMAL"
+            else:
+                pct = "N/A"
+                status = "UNKNOWN"
             lines.append(f"| {metric} | {base} | {current} | {pct} | {status} |")
 
         lines.extend([
