@@ -78,7 +78,11 @@ class RollbackAgent(BaseDeployGuardAgent):
                 author=self.name,
                 content=Content(
                     role="model",
-                    parts=[Part(text=f"ROLLBACK REFUSED: Policy checks not passed or unauthorized. {reason}")],
+                    parts=[
+                        Part(
+                            text=f"ROLLBACK REFUSED: Policy checks not passed or unauthorized. {reason}"
+                        )
+                    ],
                 ),
             )
             return
@@ -133,4 +137,3 @@ class RollbackAgent(BaseDeployGuardAgent):
                     parts=[Part(text=f"ROLLBACK EXECUTION ERROR: {str(e)}")],
                 ),
             )
-

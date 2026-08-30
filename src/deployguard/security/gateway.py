@@ -9,11 +9,18 @@ from deployguard.registry.store import AgentRegistry, seed_registry
 class ActionDeniedError(PermissionError):
     """Raised when an agent attempts an action outside its authorized IAM permission boundary."""
 
-    def __init__(self, agent_id: str, action: str, reason: str = "Action not authorized for agent") -> None:
+    def __init__(
+        self,
+        agent_id: str,
+        action: str,
+        reason: str = "Action not authorized for agent",
+    ) -> None:
         self.agent_id = agent_id
         self.action = action
         self.reason = reason
-        super().__init__(f"AgentGateway DENIED: agent '{agent_id}' cannot execute '{action}'. Reason: {reason}")
+        super().__init__(
+            f"AgentGateway DENIED: agent '{agent_id}' cannot execute '{action}'. Reason: {reason}"
+        )
 
 
 class PolicyEngine:
@@ -71,5 +78,6 @@ class AgentGateway:
     def enforce_action(self, agent_id: str, action: str) -> None:
         """Enforces permission and raises ActionDeniedError if unauthorized."""
         if not self.is_action_allowed(agent_id, action):
-            raise ActionDeniedError(agent_id, action, f"Agent '{agent_id}' lacks permission '{action}'")
-
+            raise ActionDeniedError(
+                agent_id, action, f"Agent '{agent_id}' lacks permission '{action}'"
+            )

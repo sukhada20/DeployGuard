@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from datetime import UTC, datetime
 from unittest.mock import MagicMock
 
@@ -82,6 +81,7 @@ def init_tools(registry: AgentRegistry) -> None:
 
 # Gateway enforcement tests
 
+
 def test_gateway_blocks_unknown_agent():
     with pytest.raises(PermissionError, match="not found in registry"):
         query_monitoring_metrics("unknown-agent", "svc-payments")
@@ -114,6 +114,7 @@ def test_gateway_sanitizes_string_args():
 
 # Tool signature tests
 
+
 def test_query_monitoring_metrics_signature():
     assert query_monitoring_metrics.__name__ == "query_monitoring_metrics"
     assert "metric telemetry" in query_monitoring_metrics.__doc__
@@ -137,6 +138,7 @@ def test_record_incident_returns_incident_id():
 
 
 # Model configuration tests
+
 
 def test_default_model_fast_is_flash():
     assert "flash" in DEFAULT_MODEL_FAST
@@ -178,4 +180,5 @@ def test_create_llm_agent_with_tools():
 
 def test_base_deployguard_agent_is_abstract():
     import inspect
+
     assert inspect.isabstract(BaseDeployGuardAgent)

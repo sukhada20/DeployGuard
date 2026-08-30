@@ -54,13 +54,24 @@ def test_span_hierarchy_and_attributes() -> None:
         environment="production",
         version="2.0.0",
     ):
-        with trace_agent_step("monitor.detect", severity="CRITICAL", affected_metrics="['error_rate']"):
+        with trace_agent_step(
+            "monitor.detect", severity="CRITICAL", affected_metrics="['error_rate']"
+        ):
             pass
-        with trace_agent_step("decision.evaluate", decision="rollback", confidence=0.95, policy_passed=True):
+        with trace_agent_step(
+            "decision.evaluate",
+            decision="rollback",
+            confidence=0.95,
+            policy_passed=True,
+        ):
             pass
-        with trace_agent_step("rollback.execute", target_version="1.0.0", operation_id="op-123"):
+        with trace_agent_step(
+            "rollback.execute", target_version="1.0.0", operation_id="op-123"
+        ):
             pass
-        with trace_agent_step("monitor.verify_recovery", verdict="recovered", checks_count=3):
+        with trace_agent_step(
+            "monitor.verify_recovery", verdict="recovered", checks_count=3
+        ):
             pass
 
     spans = exporter.get_finished_spans()

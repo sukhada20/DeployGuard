@@ -88,7 +88,9 @@ def generate_embedding(text: str) -> list[float]:
             model="text-embedding-004",
             contents=text,
         )
-        return list(response.embeddings[0].values)
+        if response.embeddings and response.embeddings[0].values:
+            return [float(v) for v in response.embeddings[0].values]
+        return mock_embedding(text)
     except Exception as exc:
         logger.warning("Live embedding failed, falling back to mock: %s", exc)
         return mock_embedding(text)
@@ -107,7 +109,7 @@ def cosine_similarity(a: list[float], b: list[float]) -> float:
     """
     if not a or not b or len(a) != len(b):
         return 0.0
-    dot = sum(x * y for x, y in zip(a, b))
+    dot = sum(x * y for x, y in zip(a, b, strict=True))
     norm_a = math.sqrt(sum(x * x for x in a))
     norm_b = math.sqrt(sum(y * y for y in b))
     if norm_a == 0.0 or norm_b == 0.0:

@@ -53,7 +53,9 @@ def make_test_state(
 
 
 def test_format_release_id() -> None:
-    assert format_release_id("payment-service", "1.0.0") == "release-payment-service-1-0-0"
+    assert (
+        format_release_id("payment-service", "1.0.0") == "release-payment-service-1-0-0"
+    )
     assert format_release_id("auth-api", "v2.3.1") == "release-auth-api-v2-3-1"
 
 
@@ -78,7 +80,10 @@ async def test_rollback_authorized_execution() -> None:
     assert updated_state.rollback_authorized is True
     assert updated_state.rollback_executed is True
     assert updated_state.rollback_target_version == "1.0.0"
-    assert updated_state.rollback_operation_id == "op-rollback-release-payment-service-1-0-0"
+    assert (
+        updated_state.rollback_operation_id
+        == "op-rollback-release-payment-service-1-0-0"
+    )
     assert updated_state.pipeline_status == "verifying_recovery"
 
     assert len(mock_deploy.rollbacks) == 1
@@ -179,13 +184,21 @@ def test_rollback_gateway_permission_denial() -> None:
     rollback_tool = tools["request_deployment_rollback"]
 
     # 1. Calling with rollback-v1 (has permission deployment.rollback) succeeds
-    result = rollback_tool("rollback-v1", deployment_id="dep-123", reason="Critical anomaly")
+    result = rollback_tool(
+        "rollback-v1", deployment_id="dep-123", reason="Critical anomaly"
+    )
     assert result["status"] == "requested"
 
     # 2. Calling with decision-v2 (lacks deployment.rollback) raises PermissionError
     with pytest.raises(PermissionError, match="lacks permission 'deployment.rollback'"):
-        rollback_tool("decision-v2", deployment_id="dep-123", reason="Direct rollback attempt")
+        rollback_tool(
+            "decision-v2", deployment_id="dep-123", reason="Direct rollback attempt"
+        )
 
     # 3. Calling with deploy-monitor-v1 raises PermissionError
     with pytest.raises(PermissionError, match="lacks permission 'deployment.rollback'"):
-        rollback_tool("deploy-monitor-v1", deployment_id="dep-123", reason="Direct rollback attempt")
+        rollback_tool(
+            "deploy-monitor-v1",
+            deployment_id="dep-123",
+            reason="Direct rollback attempt",
+        )

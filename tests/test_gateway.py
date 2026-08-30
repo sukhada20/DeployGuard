@@ -1,4 +1,3 @@
-
 import pytest
 
 from deployguard.cloud.stubs import MockFirestore

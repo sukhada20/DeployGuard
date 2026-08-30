@@ -74,9 +74,7 @@ def build_promql_query(service_name: str, metric_dimension: str) -> str:
             f'/ sum(rate(run_googleapis_com:request_count{{service_name="{service_name}"}}[5m]))'
         )
     elif metric_dimension == "latency":
-        return (
-            f'histogram_quantile(0.99, sum(rate(run_googleapis_com:request_latencies_bucket{{service_name="{service_name}"}}[5m])) by (le))'
-        )
+        return f'histogram_quantile(0.99, sum(rate(run_googleapis_com:request_latencies_bucket{{service_name="{service_name}"}}[5m])) by (le))'
     elif metric_dimension == "cpu":
         return f'avg(run_googleapis_com:container_cpu_utilizations{{service_name="{service_name}"}})'
     elif metric_dimension == "memory":
@@ -116,7 +114,7 @@ class LiveCloudMonitoringClient:
     async def get_metric(self, metric_name: str) -> float:
         """Fetch the current value for a metric dimension."""
         try:
-            client = self._get_client()
+            _ = self._get_client()
             filter_str = build_time_series_filter("default", metric_name)
             logger.info("Querying metric %s with filter: %s", metric_name, filter_str)
             return 0.0
@@ -128,4 +126,3 @@ class LiveCloudMonitoringClient:
         """Fetch the baseline value for a metric dimension."""
         val = await self.get_metric(metric_name)
         return val * 0.8
-

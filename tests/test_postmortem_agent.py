@@ -2,8 +2,8 @@
 
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
-import pytest
 
+import pytest
 from google.adk.agents import InvocationContext
 from google.adk.sessions import Session
 
@@ -33,8 +33,18 @@ def mock_session() -> Session:
             confidence=0.95,
             affected_metrics=["error_rate", "latency_p95"],
             evidence=[
-                {"metric": "error_rate", "baseline": 0.01, "current": 0.15, "ratio": 15.0},
-                {"metric": "latency_p95", "baseline": 120.0, "current": 480.0, "ratio": 4.0},
+                {
+                    "metric": "error_rate",
+                    "baseline": 0.01,
+                    "current": 0.15,
+                    "ratio": 15.0,
+                },
+                {
+                    "metric": "latency_p95",
+                    "baseline": 120.0,
+                    "current": 480.0,
+                    "ratio": 4.0,
+                },
             ],
             detected_at=datetime.now(UTC),
         ),
@@ -43,7 +53,11 @@ def mock_session() -> Session:
             decision="rollback",
             confidence=0.92,
             evidence_summary="Error rate spiked 15x above baseline",
-            policy_checks={"confidence_check": True, "severity_check": True, "environment_check": True},
+            policy_checks={
+                "confidence_check": True,
+                "severity_check": True,
+                "environment_check": True,
+            },
             policy_passed=True,
             authorized=True,
             authorization_reason="Critical error spike meets auto-rollback policy",
@@ -57,7 +71,10 @@ def mock_session() -> Session:
         recovery_checked_at=datetime.now(UTC),
     )
     session = MagicMock(spec=Session)
-    session.state = {"workflow_state": state.to_session_dict(), "trace_context": {"trace_id": "trace-global-123"}}
+    session.state = {
+        "workflow_state": state.to_session_dict(),
+        "trace_context": {"trace_id": "trace-global-123"},
+    }
     return session
 
 
@@ -86,12 +103,27 @@ def test_postmortem_report_schema_and_markdown():
             "error_rate": {"baseline": 0.01, "current": 0.15, "ratio": 15.0},
         },
         timeline_events=[
-            {"timestamp": "12:00:00 UTC", "stage": "DEPLOYMENT", "description": "Deployment started"},
-            {"timestamp": "12:00:15 UTC", "stage": "ANOMALY_DETECTED", "description": "Error spike detected"},
+            {
+                "timestamp": "12:00:00 UTC",
+                "stage": "DEPLOYMENT",
+                "description": "Deployment started",
+            },
+            {
+                "timestamp": "12:00:15 UTC",
+                "stage": "ANOMALY_DETECTED",
+                "description": "Error spike detected",
+            },
         ],
-        decision_summary={"decision": "rollback", "confidence": 0.92, "policy_passed": True},
+        decision_summary={
+            "decision": "rollback",
+            "confidence": 0.92,
+            "policy_passed": True,
+        },
         rollback_summary={"operation_id": "op-1", "target_version": "v2.0.9"},
-        preventative_actions=["Add memory leak integration test", "Review cache expiry settings"],
+        preventative_actions=[
+            "Add memory leak integration test",
+            "Review cache expiry settings",
+        ],
         trace_id="trace-global-123",
     )
 
@@ -108,7 +140,9 @@ def test_postmortem_report_schema_and_markdown():
 
 
 @pytest.mark.asyncio
-async def test_postmortem_agent_execution_and_storage(invocation_context: InvocationContext):
+async def test_postmortem_agent_execution_and_storage(
+    invocation_context: InvocationContext,
+):
     """Test PostmortemAgent runs, yields event, updates state, and saves to Firestore."""
     store = MockFirestore()
     agent = PostmortemAgent(document_store=store)
@@ -138,10 +172,14 @@ async def test_postmortem_agent_execution_and_storage(invocation_context: Invoca
 
 
 @pytest.mark.asyncio
-async def test_postmortem_agent_deterministic_fallback(invocation_context: InvocationContext):
+async def test_postmortem_agent_deterministic_fallback(
+    invocation_context: InvocationContext,
+):
     """Test PostmortemAgent falls back gracefully when LLM raises an error."""
     mock_llm = MagicMock(spec=GeminiReasoningClient)
-    mock_llm.generate_postmortem_narrative = AsyncMock(side_effect=RuntimeError("Gemini API connection error"))
+    mock_llm.generate_postmortem_narrative = AsyncMock(
+        side_effect=RuntimeError("Gemini API connection error")
+    )
 
     store = MockFirestore()
     agent = PostmortemAgent(llm_client=mock_llm, document_store=store)
@@ -157,4 +195,7 @@ async def test_postmortem_agent_deterministic_fallback(invocation_context: Invoc
     state_dict = invocation_context.session.state["workflow_state"]
     updated_state = DeploymentWorkflowState.from_session_dict(state_dict)
     assert updated_state.postmortem_report is not None
-    assert "Why did the incident occur?" in updated_state.postmortem_report.root_cause_analysis
+    assert (
+        "Why did the incident occur?"
+        in updated_state.postmortem_report.root_cause_analysis
+    )

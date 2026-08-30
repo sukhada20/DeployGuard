@@ -30,7 +30,11 @@ _propagator = TraceContextTextMapPropagator()
 
 def is_mock_mode() -> bool:
     """Check if mock GCP mode is enabled."""
-    return os.environ.get("DEPLOYGUARD_MOCK_GCP", "true").lower() in ("true", "1", "yes")
+    return os.environ.get("DEPLOYGUARD_MOCK_GCP", "true").lower() in (
+        "true",
+        "1",
+        "yes",
+    )
 
 
 def init_tracer(service_name: str = "deployguard-fleet") -> Tracer:
@@ -60,12 +64,17 @@ def init_tracer(service_name: str = "deployguard-fleet") -> Tracer:
             from opentelemetry.exporter.gcp_trace import CloudTraceSpanExporter
             from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
-            logger.info("Initializing OpenTelemetry with CloudTraceSpanExporter (live GCP mode)")
+            logger.info(
+                "Initializing OpenTelemetry with CloudTraceSpanExporter (live GCP mode)"
+            )
             gcp_exporter = CloudTraceSpanExporter()
             provider.add_span_processor(BatchSpanProcessor(gcp_exporter))
             _in_memory_exporter = None
         except Exception as e:
-            logger.warning("Failed to initialize CloudTraceSpanExporter, falling back to InMemory: %s", e)
+            logger.warning(
+                "Failed to initialize CloudTraceSpanExporter, falling back to InMemory: %s",
+                e,
+            )
             _in_memory_exporter = InMemorySpanExporter()
             provider.add_span_processor(SimpleSpanProcessor(_in_memory_exporter))
 
@@ -130,9 +139,7 @@ def trace_deployment(
 
 
 @contextlib.contextmanager
-def trace_agent_step(
-    step_name: str, **attributes: Any
-) -> Generator[Span, None, None]:
+def trace_agent_step(step_name: str, **attributes: Any) -> Generator[Span, None, None]:
     """Context manager for a child agent lifecycle step span.
 
     Args:

@@ -80,32 +80,40 @@ class PostmortemReport(BaseModel):
             current = delta.get("current", "N/A")
             ratio = delta.get("ratio")
             if isinstance(ratio, (int, float)):
-                pct = f"+{(ratio - 1.0) * 100:.1f}%" if ratio >= 1.0 else f"{(ratio - 1.0) * 100:.1f}%"
+                pct = (
+                    f"+{(ratio - 1.0) * 100:.1f}%"
+                    if ratio >= 1.0
+                    else f"{(ratio - 1.0) * 100:.1f}%"
+                )
                 status = "ANOMALY" if ratio > 1.2 else "NORMAL"
             else:
                 pct = "N/A"
                 status = "UNKNOWN"
             lines.append(f"| {metric} | {base} | {current} | {pct} | {status} |")
 
-        lines.extend([
-            "",
-            "## Incident Timeline",
-        ])
+        lines.extend(
+            [
+                "",
+                "## Incident Timeline",
+            ]
+        )
         for event in self.timeline_events:
             ts = event.get("timestamp", "")
             stage = event.get("stage", "Event")
             desc = event.get("description", "")
             lines.append(f"- **{ts}** `[{stage}]`: {desc}")
 
-        lines.extend([
-            "",
-            "## Governed Decision & Recovery Actions",
-            f"- **Decision:** `{self.decision_summary.get('decision', 'N/A')}` (Confidence: {self.decision_summary.get('confidence', 0.0):.2f})",
-            f"- **Policy Checks:** {self.decision_summary.get('policy_passed', False)}",
-            f"- **Rollback Operation:** `{self.rollback_summary.get('operation_id', 'N/A')}` (Target: `{self.rollback_summary.get('target_version', 'N/A')}`)",
-            "",
-            "## Preventative Action Items",
-        ])
+        lines.extend(
+            [
+                "",
+                "## Governed Decision & Recovery Actions",
+                f"- **Decision:** `{self.decision_summary.get('decision', 'N/A')}` (Confidence: {self.decision_summary.get('confidence', 0.0):.2f})",
+                f"- **Policy Checks:** {self.decision_summary.get('policy_passed', False)}",
+                f"- **Rollback Operation:** `{self.rollback_summary.get('operation_id', 'N/A')}` (Target: `{self.rollback_summary.get('target_version', 'N/A')}`)",
+                "",
+                "## Preventative Action Items",
+            ]
+        )
         for action in self.preventative_actions:
             lines.append(f"- [ ] {action}")
 

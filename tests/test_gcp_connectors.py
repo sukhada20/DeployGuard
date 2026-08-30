@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
 from deployguard.cloud.deploy_client import (
-    AGENT_SERVICE_ACCOUNT_MAPPING,
     SERVICE_ACCOUNT_ROLES,
     LiveCloudDeployClient,
     get_agent_service_account,
@@ -22,7 +21,6 @@ from deployguard.cloud.factory import (
 )
 from deployguard.cloud.logging_client import LiveCloudLoggingClient, build_lql_filter
 from deployguard.cloud.monitoring_client import (
-    DIMENSION_METRIC_MAP,
     LiveCloudMonitoringClient,
     build_promql_query,
     build_time_series_filter,
@@ -34,7 +32,6 @@ from deployguard.cloud.stubs import (
     MockMonitoring,
 )
 from deployguard.security.sanitizer import LogSanitizer
-
 
 # --------------------------------------------------------------------------- #
 # Monitoring Query & Client Tests                                             #
@@ -58,7 +55,9 @@ def test_build_time_series_filter_latency():
 
 def test_build_time_series_filter_extra_labels():
     """Extra filters are appended to time series filter expression."""
-    f = build_time_series_filter("orders", "cpu", extra_filters={"resource.labels.location": "us-central1"})
+    f = build_time_series_filter(
+        "orders", "cpu", extra_filters={"resource.labels.location": "us-central1"}
+    )
     assert 'resource.labels.location = "us-central1"' in f
 
 
@@ -90,7 +89,9 @@ async def test_live_monitoring_client_defaults():
 
 def test_build_lql_filter():
     """build_lql_filter builds proper LQL syntax."""
-    f = build_lql_filter("checkout", min_severity="ERROR", timestamp_iso="2026-08-30T00:00:00Z")
+    f = build_lql_filter(
+        "checkout", min_severity="ERROR", timestamp_iso="2026-08-30T00:00:00Z"
+    )
     assert 'resource.type="cloud_run_revision"' in f
     assert 'resource.labels.service_name="checkout"' in f
     assert "severity>=ERROR" in f
@@ -135,7 +136,9 @@ def test_service_account_roles_least_privilege():
     """Ensure rollback service account has releaser role and monitor has viewer."""
     assert "roles/clouddeploy.releaser" in SERVICE_ACCOUNT_ROLES["deployguard-rollback"]
     assert "roles/monitoring.viewer" in SERVICE_ACCOUNT_ROLES["deployguard-monitor"]
-    assert "roles/clouddeploy.releaser" not in SERVICE_ACCOUNT_ROLES["deployguard-monitor"]
+    assert (
+        "roles/clouddeploy.releaser" not in SERVICE_ACCOUNT_ROLES["deployguard-monitor"]
+    )
 
 
 @pytest.mark.asyncio
@@ -169,4 +172,3 @@ def test_factory_falls_back_to_mock_when_adc_fails():
             assert isinstance(get_logging_client(), MockLogging)
             assert isinstance(get_deploy_client(), MockCloudDeploy)
             assert isinstance(get_document_store(), MockFirestore)
-

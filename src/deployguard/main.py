@@ -60,7 +60,9 @@ def create_app() -> FastAPI:
     app.include_router(postmortems_router)
 
     # Static mount for frontend build output if directory exists
-    web_out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "web", "out")
+    web_out_dir = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "web", "out"
+    )
     if os.path.exists(web_out_dir):
         app.mount("/", StaticFiles(directory=web_out_dir, html=True), name="static-web")
 

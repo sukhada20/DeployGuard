@@ -8,7 +8,7 @@ class LogSanitizer:
     EMAIL_PATTERN = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b")
     IPV4_PATTERN = re.compile(r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b")
     CREDENTIAL_PATTERN = re.compile(
-        r"(?i)(api_key|token|password|secret|bearer|auth|credentials)\s*[:=]\s*['\"][a-zA-Z0-9_\-\.\~\+]+/?[a-zA-Z0-9_\-\.\~\+]*['\"]"
+        r"(?i)([a-zA-Z0-9_]*(?:api_key|token|password|secret|bearer|auth|credentials|key)[a-zA-Z0-9_]*)\s*[:=]\s*['\"][a-zA-Z0-9_\-\.\~\+]+/?[a-zA-Z0-9_\-\.\~\+]*['\"]"
     )
 
     # Prompt injection signatures

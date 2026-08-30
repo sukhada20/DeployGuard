@@ -4,6 +4,7 @@ import asyncio
 import logging
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
+from typing import Literal
 
 from google.adk.agents import InvocationContext
 from google.adk.events.event import Event
@@ -13,7 +14,7 @@ from deployguard.agents.base import BaseDeployGuardAgent
 from deployguard.cloud.interfaces import MetricsSource
 from deployguard.cloud.metrics import METRIC_THRESHOLDS, compare_metrics
 from deployguard.cloud.stubs import MockMonitoring
-from deployguard.state.workflow import AnomalySignal, DeploymentWorkflowState
+from deployguard.state.workflow import AnomalySignal
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +71,9 @@ class DeployMonitorAgent(BaseDeployGuardAgent):
 
         # Route to recovery verification if pipeline is in verifying_recovery state
         if state.pipeline_status == "verifying_recovery":
-            logger.info("DeployMonitorAgent — running post-rollback recovery verification")
+            logger.info(
+                "DeployMonitorAgent — running post-rollback recovery verification"
+            )
             async for event in self.verify_recovery(ctx):
                 yield event
             return
@@ -99,6 +102,7 @@ class DeployMonitorAgent(BaseDeployGuardAgent):
             affected = [e["metric"] for e in anomalous_evidence]
 
             # Simple severity heuristics
+            severity: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
             if "error_rate" in affected or "crash_rate" in affected:
                 severity = "CRITICAL"
             elif "latency" in affected or "restarts" in affected:
@@ -119,10 +123,7 @@ class DeployMonitorAgent(BaseDeployGuardAgent):
             self.set_workflow_state(ctx, state)
 
             logger.info("Anomaly detected: %s (affected: %s)", severity, affected)
-            msg = (
-                f"ANOMALY DETECTED: Severity {severity}, "
-                f"affected metrics: {affected}"
-            )
+            msg = f"ANOMALY DETECTED: Severity {severity}, affected metrics: {affected}"
             yield Event(
                 author=self.name,
                 content=Content(
@@ -164,7 +165,10 @@ class DeployMonitorAgent(BaseDeployGuardAgent):
 
         # 1. Stabilization delay (D-03)
         if self.stabilization_delay > 0:
-            logger.info("Waiting %fs for system stabilization post-rollback...", self.stabilization_delay)
+            logger.info(
+                "Waiting %fs for system stabilization post-rollback...",
+                self.stabilization_delay,
+            )
             await asyncio.sleep(self.stabilization_delay)
 
         # Baseline metrics reference (fall back to empty dict if missing)
@@ -199,7 +203,9 @@ class DeployMonitorAgent(BaseDeployGuardAgent):
                 sample_results.append(evidence)
 
             except Exception as e:
-                logger.warning("Recovery metric fetch error during iteration %d: %s", iteration, e)
+                logger.warning(
+                    "Recovery metric fetch error during iteration %d: %s", iteration, e
+                )
                 is_inconclusive = True
                 inconclusive_reason = f"Telemetry fetch exception: {e}"
                 break
@@ -219,7 +225,6 @@ class DeployMonitorAgent(BaseDeployGuardAgent):
                 for item in evidence_list:
                     metric = item["metric"]
                     curr = item["current"]
-                    base = item["baseline"]
                     ratio = item["ratio"]
 
                     # Crash/restart metrics must be 0
@@ -255,4 +260,3 @@ class DeployMonitorAgent(BaseDeployGuardAgent):
             author=self.name,
             content=Content(role="model", parts=[Part(text=summary)]),
         )
-

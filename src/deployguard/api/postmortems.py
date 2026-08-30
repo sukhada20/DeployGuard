@@ -2,6 +2,7 @@
 
 from datetime import UTC, datetime
 from typing import Any
+
 from fastapi import APIRouter, HTTPException, Request
 
 from deployguard.state.workflow import PostmortemReport
@@ -34,11 +35,31 @@ DEFAULT_POSTMORTEM_REPORT = PostmortemReport(
         "5. Why was recovery verified? Metric thresholds returned to 1.0% error rate and 120ms latency post-rollback."
     ),
     timeline_events=[
-        {"timestamp": "13:44:20 UTC", "stage": "DEPLOYMENT", "description": "Cloud Deploy release v2.4.0 rolled out to prod-cluster-1"},
-        {"timestamp": "13:44:32 UTC", "stage": "ANOMALY_DETECTED", "description": "Deploy Monitor Agent detected CRITICAL anomaly (error_rate=14.5%, latency=480ms)"},
-        {"timestamp": "13:44:34 UTC", "stage": "DECISION_EVALUATED", "description": "Decision Agent evaluated policy: rollback authorized (confidence=0.92)"},
-        {"timestamp": "13:44:48 UTC", "stage": "ROLLBACK_EXECUTED", "description": "Rollback Agent executed Cloud Deploy rollback to v2.3.9 (Op: op-9942)"},
-        {"timestamp": "13:45:06 UTC", "stage": "RECOVERY_VERIFIED", "description": "Recovery verification completed: verdict 'recovered' across all 7 dimensions"},
+        {
+            "timestamp": "13:44:20 UTC",
+            "stage": "DEPLOYMENT",
+            "description": "Cloud Deploy release v2.4.0 rolled out to prod-cluster-1",
+        },
+        {
+            "timestamp": "13:44:32 UTC",
+            "stage": "ANOMALY_DETECTED",
+            "description": "Deploy Monitor Agent detected CRITICAL anomaly (error_rate=14.5%, latency=480ms)",
+        },
+        {
+            "timestamp": "13:44:34 UTC",
+            "stage": "DECISION_EVALUATED",
+            "description": "Decision Agent evaluated policy: rollback authorized (confidence=0.92)",
+        },
+        {
+            "timestamp": "13:44:48 UTC",
+            "stage": "ROLLBACK_EXECUTED",
+            "description": "Rollback Agent executed Cloud Deploy rollback to v2.3.9 (Op: op-9942)",
+        },
+        {
+            "timestamp": "13:45:06 UTC",
+            "stage": "RECOVERY_VERIFIED",
+            "description": "Recovery verification completed: verdict 'recovered' across all 7 dimensions",
+        },
     ],
     metric_deltas={
         "error_rate": {"baseline": 0.010, "current": 0.145, "ratio": 14.5},
@@ -64,7 +85,7 @@ DEFAULT_POSTMORTEM_REPORT = PostmortemReport(
         "Add database connection pool saturation tests to checkout-service CI pipeline.",
         "Implement circuit-breaker timeouts on Postgres connection acquiring methods.",
         "Review DeployGuard canary step progression timing in delivery pipeline.",
-        "Tune Cloud Monitoring alert thresholds for early latency degradation signals."
+        "Tune Cloud Monitoring alert thresholds for early latency degradation signals.",
     ],
     trace_id="tr-20260830-checkout-01",
 )
@@ -102,7 +123,11 @@ async def get_postmortem_detail(report_id: str, request: Request) -> dict[str, A
     """Retrieve full postmortem report and rendered SRE Markdown."""
     active_state = getattr(request.app.state, "active_workflow_state", None)
 
-    if active_state and active_state.postmortem_report and active_state.postmortem_report.report_id == report_id:
+    if (
+        active_state
+        and active_state.postmortem_report
+        and active_state.postmortem_report.report_id == report_id
+    ):
         rep = active_state.postmortem_report
         data = rep.model_dump(mode="json")
         data["markdown"] = rep.to_markdown()
@@ -113,4 +138,6 @@ async def get_postmortem_detail(report_id: str, request: Request) -> dict[str, A
         data["markdown"] = DEFAULT_POSTMORTEM_REPORT.to_markdown()
         return data
 
-    raise HTTPException(status_code=404, detail=f"Postmortem report {report_id} not found")
+    raise HTTPException(
+        status_code=404, detail=f"Postmortem report {report_id} not found"
+    )

@@ -1,5 +1,5 @@
-import json
-from typing import Any, Dict
+from typing import Any
+
 
 class ModelArmorFilter:
     """Mock Model Armor wrapper to screen prompt inputs and model outputs."""
@@ -8,7 +8,7 @@ class ModelArmorFilter:
         "ignore previous instructions",
         "system override",
         "bypass security policies",
-        "you are now an admin"
+        "you are now an admin",
     ]
 
     def screen_text(self, text: str) -> str:
@@ -16,18 +16,24 @@ class ModelArmorFilter:
         lower_text = text.lower()
         for kw in self.INJECTION_KEYWORDS:
             if kw in lower_text:
-                raise ValueError(f"Security Alert: Model Armor blocked prompt injection attempt matching: '{kw}'")
+                raise ValueError(
+                    f"Security Alert: Model Armor blocked prompt injection attempt matching: '{kw}'"
+                )
         return text
 
 
 class GeminiReasoningClient:
     """Mock client for Gemini LLM reasoning calls."""
 
-    def __init__(self, model: str = "gemini-2.5-flash", safety_filter: ModelArmorFilter | None = None) -> None:
+    def __init__(
+        self,
+        model: str = "gemini-2.5-flash",
+        safety_filter: ModelArmorFilter | None = None,
+    ) -> None:
         self.model = model
         self.safety_filter = safety_filter or ModelArmorFilter()
 
-    def build_prompt(self, context: Dict[str, Any], logs: str) -> str:
+    def build_prompt(self, context: dict[str, Any], logs: str) -> str:
         """Constructs safe XML-delimited prompt for SRE reasoning."""
         return (
             "You are the DeployGuard Decision Assistant. Analyze the system state and determine if rollback is needed.\n\n"
@@ -40,10 +46,12 @@ class GeminiReasoningClient:
             f"<untrusted_logs>\n"
             f"{logs}\n"
             f"</untrusted_logs>\n\n"
-            "Response format MUST be JSON: {\"recommendation\": \"rollback|wait|alert\", \"confidence\": float, \"reasoning\": \"string\"}"
+            'Response format MUST be JSON: {"recommendation": "rollback|wait|alert", "confidence": float, "reasoning": "string"}'
         )
 
-    async def get_recommendation(self, context: Dict[str, Any], logs: str) -> Dict[str, Any]:
+    async def get_recommendation(
+        self, context: dict[str, Any], logs: str
+    ) -> dict[str, Any]:
         """Validates inputs and calls LLM simulation to return structured decision dict."""
         # 1. Screen input prompt text
         prompt = self.build_prompt(context, logs)
@@ -64,10 +72,10 @@ class GeminiReasoningClient:
         return {
             "recommendation": recommendation,
             "confidence": confidence,
-            "reasoning": reasoning
+            "reasoning": reasoning,
         }
 
-    def build_postmortem_prompt(self, incident_context: Dict[str, Any]) -> str:
+    def build_postmortem_prompt(self, incident_context: dict[str, Any]) -> str:
         """Constructs XML-delimited prompt for postmortem narrative synthesis."""
         return (
             "You are the DeployGuard SRE Postmortem Specialist. Synthesize an executive summary, "
@@ -84,7 +92,9 @@ class GeminiReasoningClient:
             "Response format MUST be JSON with keys: executive_summary (string), root_cause_analysis (string), preventative_actions (list of strings)."
         )
 
-    async def generate_postmortem_narrative(self, incident_context: Dict[str, Any]) -> Dict[str, Any]:
+    async def generate_postmortem_narrative(
+        self, incident_context: dict[str, Any]
+    ) -> dict[str, Any]:
         """Generates executive summary, root cause, and action items with Model Armor screening."""
         prompt = self.build_postmortem_prompt(incident_context)
         self.safety_filter.screen_text(prompt)
@@ -92,7 +102,9 @@ class GeminiReasoningClient:
         service = incident_context.get("service_name", "service")
         target_version = incident_context.get("target_version", "unknown")
         stable_version = incident_context.get("stable_version", "unknown")
-        metrics = ", ".join(incident_context.get("affected_metrics", ["system metrics"]))
+        metrics = ", ".join(
+            incident_context.get("affected_metrics", ["system metrics"])
+        )
         outcome = incident_context.get("outcome", "resolved")
 
         executive_summary = (
@@ -114,7 +126,7 @@ class GeminiReasoningClient:
             f"Implement pre-deployment canary load tests specifically exercising {metrics}.",
             f"Add stricter static lint and performance benchmarking to {service} CI pipeline.",
             "Tune DeployGuard baseline anomaly detection thresholds for early warning alerts.",
-            "Verify memory and CPU resource limits in Kubernetes / Cloud Run deployment manifests."
+            "Verify memory and CPU resource limits in Kubernetes / Cloud Run deployment manifests.",
         ]
 
         return {

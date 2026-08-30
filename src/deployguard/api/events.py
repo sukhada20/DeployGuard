@@ -27,14 +27,19 @@ class AsyncEventBroadcaster:
         queue: asyncio.Queue[dict[str, Any]] = asyncio.Queue(maxsize=100)
         async with self._lock:
             self._subscribers.add(queue)
-            logger.info("SSE client connected. Total subscribers: %d", len(self._subscribers))
+            logger.info(
+                "SSE client connected. Total subscribers: %d", len(self._subscribers)
+            )
         return queue
 
     async def unsubscribe(self, queue: asyncio.Queue[dict[str, Any]]) -> None:
         """Unregister a client subscriber queue."""
         async with self._lock:
             self._subscribers.discard(queue)
-            logger.info("SSE client disconnected. Remaining subscribers: %d", len(self._subscribers))
+            logger.info(
+                "SSE client disconnected. Remaining subscribers: %d",
+                len(self._subscribers),
+            )
 
     async def broadcast(self, event_type: str, data: dict[str, Any]) -> None:
         """Broadcast an event payload to all connected subscribers."""
@@ -57,7 +62,9 @@ class AsyncEventBroadcaster:
 broadcaster = AsyncEventBroadcaster()
 
 
-async def event_generator(queue: asyncio.Queue[dict[str, Any]]) -> AsyncGenerator[str, None]:
+async def event_generator(
+    queue: asyncio.Queue[dict[str, Any]],
+) -> AsyncGenerator[str, None]:
     """Yield formatted SSE event chunks and periodic heartbeats."""
     # Send initial connection confirmation
     yield f"event: connected\ndata: {json.dumps({'status': 'connected', 'timestamp': datetime.now(UTC).isoformat()})}\n\n"
@@ -70,7 +77,7 @@ async def event_generator(queue: asyncio.Queue[dict[str, Any]]) -> AsyncGenerato
                 event_type = event_payload.get("event", "message")
                 data_str = json.dumps(event_payload.get("data", {}))
                 yield f"event: {event_type}\ndata: {data_str}\n\n"
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 # Heartbeat keep-alive
                 yield f": heartbeat {datetime.now(UTC).isoformat()}\n\n"
     except asyncio.CancelledError:

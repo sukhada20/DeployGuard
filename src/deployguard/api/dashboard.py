@@ -2,6 +2,7 @@
 
 from datetime import UTC, datetime
 from typing import Any
+
 from fastapi import APIRouter, Request
 
 router = APIRouter(prefix="/api/v1/dashboard", tags=["dashboard"])
@@ -24,7 +25,12 @@ async def get_dashboard_overview(request: Request) -> dict[str, Any]:
     }
 
     if active_state:
-        is_incident = active_state.pipeline_status in ["anomaly_detected", "investigating", "decision_made", "rolling_back"]
+        is_incident = active_state.pipeline_status in [
+            "anomaly_detected",
+            "investigating",
+            "decision_made",
+            "rolling_back",
+        ]
         active_dep = {
             "service_name": active_state.service_name,
             "target_version": active_state.version,
@@ -106,7 +112,9 @@ async def get_telemetry_metrics(request: Request) -> dict[str, Any]:
         return round(((curr - base) / base) * 100.0, 1)
 
     return {
-        "service_name": active_state.service_name if active_state else "checkout-service",
+        "service_name": active_state.service_name
+        if active_state
+        else "checkout-service",
         "timestamp": datetime.now(UTC).isoformat(),
         "metrics": {
             "error_rate": {

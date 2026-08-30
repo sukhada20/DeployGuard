@@ -86,7 +86,9 @@ class LiveCloudLoggingClient:
         Returns:
             List of sanitized log dicts.
         """
-        logger.info("Executing Cloud Logging query: filter=%s, limit=%d", filter_str, limit)
+        logger.info(
+            "Executing Cloud Logging query: filter=%s, limit=%d", filter_str, limit
+        )
         results: list[dict[str, Any]] = []
         try:
             client = self._get_client()
@@ -103,7 +105,9 @@ class LiveCloudLoggingClient:
                     }
                 )
         except Exception as e:
-            logger.warning("Failed querying Cloud Logging (filter=%s): %s", filter_str, e)
+            logger.warning(
+                "Failed querying Cloud Logging (filter=%s): %s", filter_str, e
+            )
 
         return results
 
@@ -115,4 +119,3 @@ class LiveCloudLoggingClient:
         elif isinstance(payload, list):
             return [self._sanitize_payload(x) for x in payload]
         return payload
-

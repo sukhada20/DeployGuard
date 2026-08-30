@@ -1,7 +1,7 @@
 """Decision traces API endpoints."""
 
-from datetime import UTC, datetime
 from typing import Any
+
 from fastapi import APIRouter, HTTPException, Request
 
 router = APIRouter(prefix="/api/v1/traces", tags=["traces"])
@@ -26,12 +26,42 @@ DEFAULT_TRACES = [
         "authorization_reason": "Policy Gate: All 5 production safety checks PASSED. Authorized for rollback.",
         "decided_at": "2026-08-30T13:45:10Z",
         "spans": [
-            {"name": "deployguard.deployment", "duration_ms": 38400, "status": "OK", "start_offset_ms": 0},
-            {"name": "monitor.detect", "duration_ms": 1200, "status": "OK", "start_offset_ms": 200},
-            {"name": "decision.evaluate", "duration_ms": 1850, "status": "OK", "start_offset_ms": 1500},
-            {"name": "rollback.execute", "duration_ms": 14200, "status": "OK", "start_offset_ms": 3400},
-            {"name": "monitor.verify_recovery", "duration_ms": 18000, "status": "OK", "start_offset_ms": 17800},
-            {"name": "postmortem.generate", "duration_ms": 2100, "status": "OK", "start_offset_ms": 36000},
+            {
+                "name": "deployguard.deployment",
+                "duration_ms": 38400,
+                "status": "OK",
+                "start_offset_ms": 0,
+            },
+            {
+                "name": "monitor.detect",
+                "duration_ms": 1200,
+                "status": "OK",
+                "start_offset_ms": 200,
+            },
+            {
+                "name": "decision.evaluate",
+                "duration_ms": 1850,
+                "status": "OK",
+                "start_offset_ms": 1500,
+            },
+            {
+                "name": "rollback.execute",
+                "duration_ms": 14200,
+                "status": "OK",
+                "start_offset_ms": 3400,
+            },
+            {
+                "name": "monitor.verify_recovery",
+                "duration_ms": 18000,
+                "status": "OK",
+                "start_offset_ms": 17800,
+            },
+            {
+                "name": "postmortem.generate",
+                "duration_ms": 2100,
+                "status": "OK",
+                "start_offset_ms": 36000,
+            },
         ],
     },
     {
@@ -52,16 +82,33 @@ DEFAULT_TRACES = [
         "authorization_reason": "Policy Gate: Severity LOW did not meet automated rollback threshold.",
         "decided_at": "2026-08-30T11:20:00Z",
         "spans": [
-            {"name": "deployguard.deployment", "duration_ms": 3500, "status": "OK", "start_offset_ms": 0},
-            {"name": "monitor.detect", "duration_ms": 1100, "status": "OK", "start_offset_ms": 100},
-            {"name": "decision.evaluate", "duration_ms": 1900, "status": "OK", "start_offset_ms": 1300},
+            {
+                "name": "deployguard.deployment",
+                "duration_ms": 3500,
+                "status": "OK",
+                "start_offset_ms": 0,
+            },
+            {
+                "name": "monitor.detect",
+                "duration_ms": 1100,
+                "status": "OK",
+                "start_offset_ms": 100,
+            },
+            {
+                "name": "decision.evaluate",
+                "duration_ms": 1900,
+                "status": "OK",
+                "start_offset_ms": 1300,
+            },
         ],
     },
 ]
 
 
 @router.get("")
-async def list_decision_traces(request: Request, service: str | None = None) -> list[dict[str, Any]]:
+async def list_decision_traces(
+    request: Request, service: str | None = None
+) -> list[dict[str, Any]]:
     """List historical and active decision traces."""
     active_state = getattr(request.app.state, "active_workflow_state", None)
     results = list(DEFAULT_TRACES)
@@ -80,11 +127,36 @@ async def list_decision_traces(request: Request, service: str | None = None) -> 
             "authorization_reason": dt.authorization_reason,
             "decided_at": dt.decided_at.isoformat(),
             "spans": [
-                {"name": "deployguard.deployment", "duration_ms": 42000, "status": "OK", "start_offset_ms": 0},
-                {"name": "monitor.detect", "duration_ms": 1200, "status": "OK", "start_offset_ms": 200},
-                {"name": "decision.evaluate", "duration_ms": 1800, "status": "OK", "start_offset_ms": 1500},
-                {"name": "rollback.execute", "duration_ms": 15000, "status": "OK", "start_offset_ms": 3400},
-                {"name": "monitor.verify_recovery", "duration_ms": 18000, "status": "OK", "start_offset_ms": 18500},
+                {
+                    "name": "deployguard.deployment",
+                    "duration_ms": 42000,
+                    "status": "OK",
+                    "start_offset_ms": 0,
+                },
+                {
+                    "name": "monitor.detect",
+                    "duration_ms": 1200,
+                    "status": "OK",
+                    "start_offset_ms": 200,
+                },
+                {
+                    "name": "decision.evaluate",
+                    "duration_ms": 1800,
+                    "status": "OK",
+                    "start_offset_ms": 1500,
+                },
+                {
+                    "name": "rollback.execute",
+                    "duration_ms": 15000,
+                    "status": "OK",
+                    "start_offset_ms": 3400,
+                },
+                {
+                    "name": "monitor.verify_recovery",
+                    "duration_ms": 18000,
+                    "status": "OK",
+                    "start_offset_ms": 18500,
+                },
             ],
         }
         # Prepend active trace

@@ -102,16 +102,19 @@ class LiveCloudDeployClient:
             release_id,
         )
         try:
-            client = self._get_client()
+            _ = self._get_client()
             # Construct parent name: projects/{project}/locations/{location}/deliveryPipelines/{pipeline}/releases/{release}
             parent = (
                 f"projects/{self.project_id}/locations/{self.location}/"
                 f"deliveryPipelines/{delivery_pipeline_id}/releases/{release_id}"
             )
             rollout_id = f"rollback-{release_id}-{target_id}"
-            logger.info("Calling Cloud Deploy create_rollout parent=%s, rollout_id=%s", parent, rollout_id)
+            logger.info(
+                "Calling Cloud Deploy create_rollout parent=%s, rollout_id=%s",
+                parent,
+                rollout_id,
+            )
             return f"op-clouddeploy-{rollout_id}"
         except Exception as e:
             logger.warning("Cloud Deploy rollback request failed: %s", e)
             return f"op-mock-rollback-{release_id}"
-

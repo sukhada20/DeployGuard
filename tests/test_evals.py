@@ -121,7 +121,9 @@ def test_eval_true_positive_rollback_accuracy():
         evidence = compare_metrics(current_metrics, baselines)
 
         anomalies_detected = [e for e in evidence if e["anomalous"]]
-        assert len(anomalies_detected) > 0, f"Case {case['eval_case_id']} missed anomaly detection"
+        assert len(anomalies_detected) > 0, (
+            f"Case {case['eval_case_id']} missed anomaly detection"
+        )
 
         # Formulate state for policy engine
         state = {
@@ -161,7 +163,9 @@ def test_eval_true_negative_rollback_accuracy():
 
         anomalies_detected = [e for e in evidence if e["anomalous"]]
         # Healthy metrics should not register severe multi-metric anomalies
-        assert len(anomalies_detected) == 0, f"Case {case['eval_case_id']} raised false positive"
+        assert len(anomalies_detected) == 0, (
+            f"Case {case['eval_case_id']} raised false positive"
+        )
 
         decision = "CONTINUE"
         evaluated_decisions.append((decision, case["expected_decision"]))
@@ -221,7 +225,9 @@ def test_eval_unauthorized_escalation_boundary(setup_gateway_environment):
 
         if action == "request_deployment_rollback":
             with pytest.raises(PermissionError, match="Gateway denied"):
-                request_deployment_rollback(agent_id, "dep-test", "Unauthorized attempt")
+                request_deployment_rollback(
+                    agent_id, "dep-test", "Unauthorized attempt"
+                )
             blocked_attempts += 1
         elif action == "query_monitoring_metrics":
             with pytest.raises(PermissionError, match="Gateway denied"):
@@ -230,4 +236,3 @@ def test_eval_unauthorized_escalation_boundary(setup_gateway_environment):
 
     pass_rate = blocked_attempts / len(cases)
     assert pass_rate == 1.0, "Security authorization pass rate must be strictly 100%"
-

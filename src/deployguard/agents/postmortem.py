@@ -1,7 +1,6 @@
 """Postmortem Agent — generates auditable postmortem documents."""
 
 import logging
-import uuid
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
 from typing import Any
@@ -44,7 +43,9 @@ class PostmortemAgent(BaseDeployGuardAgent):
             logger.warning("No workflow state found in context")
             yield Event(
                 author=self.name,
-                content=Content(parts=[Part(text="No active deployment workflow state found.")]),  # type: ignore
+                content=Content(
+                    parts=[Part(text="No active deployment workflow state found.")]
+                ),  # type: ignore
             )
             return
 
@@ -90,29 +91,45 @@ class PostmortemAgent(BaseDeployGuardAgent):
             }
         ]
         if state.anomaly_signal:
-            timeline_events.append({
-                "timestamp": state.anomaly_signal.detected_at.strftime("%H:%M:%S UTC"),
-                "stage": "ANOMALY_DETECTED",
-                "description": f"Anomaly detected ({severity}) affecting: {', '.join(affected_metrics)}",
-            })
+            timeline_events.append(
+                {
+                    "timestamp": state.anomaly_signal.detected_at.strftime(
+                        "%H:%M:%S UTC"
+                    ),
+                    "stage": "ANOMALY_DETECTED",
+                    "description": f"Anomaly detected ({severity}) affecting: {', '.join(affected_metrics)}",
+                }
+            )
         if state.decision_trace:
-            timeline_events.append({
-                "timestamp": state.decision_trace.decided_at.strftime("%H:%M:%S UTC"),
-                "stage": "DECISION_EVALUATED",
-                "description": f"Decision: {state.decision_trace.decision} (Confidence: {state.decision_trace.confidence:.2f})",
-            })
+            timeline_events.append(
+                {
+                    "timestamp": state.decision_trace.decided_at.strftime(
+                        "%H:%M:%S UTC"
+                    ),
+                    "stage": "DECISION_EVALUATED",
+                    "description": f"Decision: {state.decision_trace.decision} (Confidence: {state.decision_trace.confidence:.2f})",
+                }
+            )
         if state.rollback_executed:
-            timeline_events.append({
-                "timestamp": (state.recovery_checked_at or now).strftime("%H:%M:%S UTC"),
-                "stage": "ROLLBACK_EXECUTED",
-                "description": f"Rollback executed to {stable_version} (Op ID: {state.rollback_operation_id or 'op-sync'})",
-            })
+            timeline_events.append(
+                {
+                    "timestamp": (state.recovery_checked_at or now).strftime(
+                        "%H:%M:%S UTC"
+                    ),
+                    "stage": "ROLLBACK_EXECUTED",
+                    "description": f"Rollback executed to {stable_version} (Op ID: {state.rollback_operation_id or 'op-sync'})",
+                }
+            )
         if state.recovery_verdict:
-            timeline_events.append({
-                "timestamp": (state.recovery_checked_at or now).strftime("%H:%M:%S UTC"),
-                "stage": "RECOVERY_VERIFIED",
-                "description": f"Recovery verification completed with verdict: {state.recovery_verdict}",
-            })
+            timeline_events.append(
+                {
+                    "timestamp": (state.recovery_checked_at or now).strftime(
+                        "%H:%M:%S UTC"
+                    ),
+                    "stage": "RECOVERY_VERIFIED",
+                    "description": f"Recovery verification completed with verdict: {state.recovery_verdict}",
+                }
+            )
 
         # 4. Summaries
         decision_summary = {}
@@ -141,16 +158,23 @@ class PostmortemAgent(BaseDeployGuardAgent):
             "stable_version": stable_version,
             "outcome": outcome,
             "affected_metrics": affected_metrics,
-            "decision_rationale": state.decision_trace.authorization_reason if state.decision_trace else "Automatic anomaly remediation",
+            "decision_rationale": state.decision_trace.authorization_reason
+            if state.decision_trace
+            else "Automatic anomaly remediation",
         }
 
         try:
-            narrative = await self._llm_client.generate_postmortem_narrative(incident_context)
+            narrative = await self._llm_client.generate_postmortem_narrative(
+                incident_context
+            )
             executive_summary = narrative.get("executive_summary", "")
             root_cause_analysis = narrative.get("root_cause_analysis", "")
             preventative_actions = narrative.get("preventative_actions", [])
         except Exception as e:
-            logger.warning("LLM postmortem generation failed, falling back to deterministic synthesis: %s", e)
+            logger.warning(
+                "LLM postmortem generation failed, falling back to deterministic synthesis: %s",
+                e,
+            )
             executive_summary = (
                 f"During deployment of {service_name} ({target_version}), automated monitoring detected a "
                 f"{severity} anomaly on {', '.join(affected_metrics) or 'telemetry metrics'}. Autonomous decisioning "
@@ -166,12 +190,18 @@ class PostmortemAgent(BaseDeployGuardAgent):
             preventative_actions = [
                 f"Add load test suites for {service_name} covering {', '.join(affected_metrics) or 'key metrics'}.",
                 "Review canary deployment progression gates in CI/CD pipeline.",
-                "Verify resource limits and scaling configurations in Cloud Run/GKE manifests."
+                "Verify resource limits and scaling configurations in Cloud Run/GKE manifests.",
             ]
 
         # 6. Extract Trace ID
-        trace_context = ctx.session.state.get("trace_context", {}) if hasattr(ctx, "session") and hasattr(ctx.session, "state") else {}
-        trace_id = trace_context.get("trace_id") if isinstance(trace_context, dict) else None
+        trace_context = (
+            ctx.session.state.get("trace_context", {})
+            if hasattr(ctx, "session") and hasattr(ctx.session, "state")
+            else {}
+        )
+        trace_id = (
+            trace_context.get("trace_id") if isinstance(trace_context, dict) else None
+        )
         if not trace_id and state.decision_trace:
             trace_id = state.decision_trace.trace_id
 
@@ -197,7 +227,9 @@ class PostmortemAgent(BaseDeployGuardAgent):
         )
 
         # 8. Persist to Firestore & WorkflowState
-        await self._document_store.set_document("postmortems", report_id, report.model_dump(mode="json"))
+        await self._document_store.set_document(
+            "postmortems", report_id, report.model_dump(mode="json")
+        )
         state.postmortem_id = report_id
         state.postmortem_report = report
         self.set_workflow_state(ctx, state)
@@ -205,5 +237,11 @@ class PostmortemAgent(BaseDeployGuardAgent):
         logger.info("PostmortemAgent — report %s saved successfully", report_id)
         yield Event(
             author=self.name,
-            content=Content(parts=[Part(text=f"Postmortem report generated: {report_id}\n\n{report.to_markdown()}")]),  # type: ignore
+            content=Content(
+                parts=[
+                    Part(
+                        text=f"Postmortem report generated: {report_id}\n\n{report.to_markdown()}"
+                    )
+                ]
+            ),  # type: ignore
         )

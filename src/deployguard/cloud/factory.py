@@ -26,7 +26,11 @@ logger = logging.getLogger(__name__)
 
 def is_mock_mode() -> bool:
     """Check if DeployGuard is explicitly running in mock GCP mode."""
-    return os.environ.get("DEPLOYGUARD_MOCK_GCP", "true").lower() in ("true", "1", "yes")
+    return os.environ.get("DEPLOYGUARD_MOCK_GCP", "true").lower() in (
+        "true",
+        "1",
+        "yes",
+    )
 
 
 def has_valid_adc() -> bool:
@@ -51,7 +55,9 @@ def get_monitoring_client() -> Any:
     try:
         return LiveCloudMonitoringClient()
     except Exception as e:
-        logger.warning("Failed initializing LiveCloudMonitoringClient, falling back to stub: %s", e)
+        logger.warning(
+            "Failed initializing LiveCloudMonitoringClient, falling back to stub: %s", e
+        )
         return MockMonitoring()
 
 
@@ -63,32 +69,41 @@ def get_logging_client() -> Any:
     try:
         return LiveCloudLoggingClient()
     except Exception as e:
-        logger.warning("Failed initializing LiveCloudLoggingClient, falling back to stub: %s", e)
+        logger.warning(
+            "Failed initializing LiveCloudLoggingClient, falling back to stub: %s", e
+        )
         return MockLogging()
 
 
 def get_deploy_client() -> Any:
     """Get a Cloud Deploy client instance (live or mock)."""
     if is_mock_mode() or not has_valid_adc():
-        logger.info("Using MockCloudDeploy client (DEPLOYGUARD_MOCK_GCP=true or no ADC)")
+        logger.info(
+            "Using MockCloudDeploy client (DEPLOYGUARD_MOCK_GCP=true or no ADC)"
+        )
         return MockCloudDeploy()
     try:
         return LiveCloudDeployClient()
     except Exception as e:
-        logger.warning("Failed initializing LiveCloudDeployClient, falling back to stub: %s", e)
+        logger.warning(
+            "Failed initializing LiveCloudDeployClient, falling back to stub: %s", e
+        )
         return MockCloudDeploy()
 
 
 def get_document_store() -> Any:
     """Get a Firestore / DocumentStore client instance (live or mock)."""
     if is_mock_mode() or not has_valid_adc():
-        logger.info("Using MockFirestore document store (DEPLOYGUARD_MOCK_GCP=true or no ADC)")
+        logger.info(
+            "Using MockFirestore document store (DEPLOYGUARD_MOCK_GCP=true or no ADC)"
+        )
         return MockFirestore()
     try:
         from google.cloud import firestore
 
         return firestore.AsyncClient()
     except Exception as e:
-        logger.warning("Failed initializing Live Firestore client, falling back to stub: %s", e)
+        logger.warning(
+            "Failed initializing Live Firestore client, falling back to stub: %s", e
+        )
         return MockFirestore()
-

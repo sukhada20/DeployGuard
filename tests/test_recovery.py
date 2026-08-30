@@ -1,12 +1,10 @@
 """Tests for post-rollback recovery verification loop."""
 
 from datetime import UTC, datetime
-from typing import Any
 
 import pytest
 
 from deployguard.agents.deploy_monitor import DeployMonitorAgent
-from deployguard.cloud.metrics import METRIC_THRESHOLDS
 from deployguard.cloud.stubs import MockMonitoring
 from deployguard.state.workflow import DeploymentWorkflowState
 

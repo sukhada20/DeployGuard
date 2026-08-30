@@ -11,16 +11,14 @@ os.environ["DEPLOYGUARD_MOCK_GCP"] = "true"
 
 from deployguard.agents.incident_memory import IncidentMemoryAgent
 from deployguard.cloud.embeddings import (
-    COSINE_THRESHOLD,
-    DEFAULT_TOP_K,
     cosine_similarity,
     generate_embedding,
     mock_embedding,
 )
 from deployguard.cloud.stubs import MockFirestore
 
-
 # Embedding utility tests
+
 
 def test_mock_embedding_is_deterministic():
     e1 = mock_embedding("payment service error")
@@ -36,6 +34,7 @@ def test_mock_embedding_different_texts_differ():
 
 def test_mock_embedding_is_unit_vector():
     import math
+
     e = mock_embedding("test text")
     norm = math.sqrt(sum(v * v for v in e))
     assert abs(norm - 1.0) < 1e-6
@@ -62,6 +61,7 @@ def test_generate_embedding_uses_mock_in_mock_mode():
 
 # MockFirestore vector search tests
 
+
 @pytest.mark.asyncio
 async def test_mock_firestore_find_nearest_returns_similar_docs():
     store = MockFirestore()
@@ -69,7 +69,8 @@ async def test_mock_firestore_find_nearest_returns_similar_docs():
     embedding = mock_embedding(text)
 
     await store.set_document(
-        "incidents", "inc-001",
+        "incidents",
+        "inc-001",
         {"service_name": "svc-payments", "summary": text, "embedding": embedding},
     )
 
@@ -93,11 +94,13 @@ async def test_mock_firestore_filters_by_service_name():
     auth_emb = mock_embedding("auth error")
 
     await store.set_document(
-        "incidents", "inc-p",
+        "incidents",
+        "inc-p",
         {"service_name": "svc-payments", "embedding": payments_emb},
     )
     await store.set_document(
-        "incidents", "inc-a",
+        "incidents",
+        "inc-a",
         {"service_name": "svc-auth", "embedding": auth_emb},
     )
 
@@ -120,7 +123,8 @@ async def test_mock_firestore_excludes_below_threshold():
     emb_a = mock_embedding("payment high latency")
 
     await store.set_document(
-        "incidents", "inc-001",
+        "incidents",
+        "inc-001",
         {"service_name": "svc-x", "embedding": emb_a},
     )
 
@@ -140,7 +144,8 @@ async def test_mock_firestore_excludes_below_threshold():
 async def test_mock_firestore_excludes_docs_without_embedding():
     store = MockFirestore()
     await store.set_document(
-        "incidents", "inc-no-emb",
+        "incidents",
+        "inc-no-emb",
         {"service_name": "svc-payments", "summary": "no embedding"},
     )
     results = await store.find_nearest_in_collection(
@@ -161,7 +166,8 @@ async def test_mock_firestore_respects_limit():
     base_emb = mock_embedding("payment service error")
     for i in range(5):
         await store.set_document(
-            "incidents", f"inc-{i:03d}",
+            "incidents",
+            f"inc-{i:03d}",
             {"service_name": "svc-payments", "embedding": base_emb},
         )
 
@@ -178,6 +184,7 @@ async def test_mock_firestore_respects_limit():
 
 
 # IncidentMemoryAgent tests
+
 
 @pytest.mark.asyncio
 async def test_store_incident_generates_embedding():

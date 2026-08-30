@@ -13,6 +13,9 @@ class MockFirestore:
     def __init__(self) -> None:
         self.documents: dict[str, dict[str, Any]] = {}
 
+    def clear(self) -> None:
+        self.documents.clear()
+
     async def set_document(
         self, collection: str, document_id: str, data: dict[str, Any]
     ) -> None:
@@ -72,10 +75,7 @@ class MockFirestore:
         ]
 
         # 2. Pre-filter by metadata field
-        filtered = [
-            doc for doc in candidates
-            if doc.get(filter_field) == filter_value
-        ]
+        filtered = [doc for doc in candidates if doc.get(filter_field) == filter_value]
 
         # 3. Compute cosine similarity and filter by threshold
         scored: list[tuple[float, dict[str, Any]]] = []
@@ -158,4 +158,3 @@ class MockLogging:
         # In a real implementation this would parse the filter.
         # Here we just return all seeded logs for simplicity.
         return self.logs
-

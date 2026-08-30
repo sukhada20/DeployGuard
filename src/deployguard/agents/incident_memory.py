@@ -8,7 +8,6 @@ in-memory fallback or live Firestore VectorQuery).
 from __future__ import annotations
 
 import logging
-import os
 from collections.abc import AsyncGenerator
 from typing import Any, ClassVar
 
@@ -19,7 +18,11 @@ from google.genai.types import Content, Part
 from deployguard.agents.base import BaseDeployGuardAgent
 from deployguard.cloud.embeddings import (
     COSINE_THRESHOLD as _COSINE_THRESHOLD,
+)
+from deployguard.cloud.embeddings import (
     DEFAULT_TOP_K as _DEFAULT_TOP_K,
+)
+from deployguard.cloud.embeddings import (
     cosine_similarity,
     generate_embedding,
 )
@@ -65,9 +68,7 @@ class IncidentMemoryAgent(BaseDeployGuardAgent):
             return self._sanitizer.sanitize(val)
         return val
 
-    async def store_incident(
-        self, incident_id: str, data: dict[str, Any]
-    ) -> None:
+    async def store_incident(self, incident_id: str, data: dict[str, Any]) -> None:
         """Store an incident with its embedding vector.
 
         Sanitizes all string fields, generates a text-embedding-004 vector
@@ -183,9 +184,7 @@ class IncidentMemoryAgent(BaseDeployGuardAgent):
             All incidents for the given service, unordered.
         """
         all_docs = await self._document_store.query("incidents", [])
-        return [
-            doc for doc in all_docs if doc.get("service_name") == service_name
-        ]
+        return [doc for doc in all_docs if doc.get("service_name") == service_name]
 
     async def _execute(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
         logger.info("IncidentMemoryAgent — querying and updating memory bank")

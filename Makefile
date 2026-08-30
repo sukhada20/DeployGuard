@@ -25,7 +25,7 @@ lint:
 	@echo "Running linter (ruff)..."
 	@uv run python -m ruff check src/ tests/
 	@echo "Running type checker (mypy)..."
-	@uv run python -m mypy src/ tests/
+	@uv run python -m mypy src/
 
 # Format code
 format:

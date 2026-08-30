@@ -2,6 +2,7 @@
 
 import asyncio
 from datetime import UTC, datetime
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 
@@ -30,8 +31,18 @@ def app_with_state():
             confidence=0.88,
             affected_metrics=["error_rate", "latency_p95"],
             evidence=[
-                {"metric": "error_rate", "baseline": 0.010, "current": 0.050, "ratio": 5.0},
-                {"metric": "latency_p95", "baseline": 120.0, "current": 250.0, "ratio": 2.08},
+                {
+                    "metric": "error_rate",
+                    "baseline": 0.010,
+                    "current": 0.050,
+                    "ratio": 5.0,
+                },
+                {
+                    "metric": "latency_p95",
+                    "baseline": 120.0,
+                    "current": 250.0,
+                    "ratio": 2.08,
+                },
             ],
             detected_at=datetime.now(UTC),
         ),
@@ -145,7 +156,9 @@ async def test_postmortems_endpoints(app_with_state):
         assert len(postmortems) >= 1
         assert postmortems[0]["report_id"] == "pm-checkout-service-dep-test"
 
-        detail_res = await client.get("/api/v1/postmortems/pm-checkout-service-dep-test")
+        detail_res = await client.get(
+            "/api/v1/postmortems/pm-checkout-service-dep-test"
+        )
         assert detail_res.status_code == 200
         pm_data = detail_res.json()
         assert pm_data["report_id"] == "pm-checkout-service-dep-test"
@@ -159,7 +172,7 @@ async def test_sse_events_stream():
     app = create_app()
     transport = ASGITransport(app=app)
 
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
+    async with AsyncClient(transport=transport, base_url="http://test"):
         # Subscribe queue directly to test broadcaster
         q = await broadcaster.subscribe()
         await broadcaster.broadcast("test_event", {"hello": "world"})
@@ -181,4 +194,3 @@ async def test_spa_static_serving():
         if response.status_code == 200:
             assert "text/html" in response.headers.get("content-type", "")
             assert "DeployGuard" in response.text
-

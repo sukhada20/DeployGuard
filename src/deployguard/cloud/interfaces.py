@@ -22,4 +22,3 @@ class DeploymentManager(Protocol):
     async def execute_rollback(
         self, release_id: str, target_id: str, delivery_pipeline_id: str
     ) -> str: ...
-

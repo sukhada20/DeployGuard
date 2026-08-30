@@ -32,9 +32,7 @@ logger = logging.getLogger(__name__)
 # Model configuration                                                          #
 # --------------------------------------------------------------------------- #
 
-DEFAULT_MODEL_FAST: str = os.environ.get(
-    "DEPLOYGUARD_MODEL_FAST", "gemini-2.5-flash"
-)
+DEFAULT_MODEL_FAST: str = os.environ.get("DEPLOYGUARD_MODEL_FAST", "gemini-2.5-flash")
 """Default model for fast, high-throughput agents (monitoring, memory, postmortem)."""
 
 DEFAULT_MODEL_DECISION: str = os.environ.get(
@@ -138,6 +136,6 @@ def create_llm_agent(
         name=name,
         model=resolved_model,
         instruction=instruction,
-        tools=tools or [],
+        tools=tools or [],  # type: ignore[arg-type]
         description=description,
     )

@@ -152,9 +152,7 @@ def fetch_historical_incidents(
 
 
 @gateway_tool("deployment.rollback")
-def request_deployment_rollback(
-    agent_id: str, deployment_id: str, reason: str
-) -> dict:
+def request_deployment_rollback(agent_id: str, deployment_id: str, reason: str) -> dict:
     """Request a Cloud Deploy rollback for the specified deployment.
 
     This is a high-privilege operation. The calling agent must hold the
@@ -197,9 +195,9 @@ def record_incident(
     Returns:
         A dict with incident_id and storage status.
     """
-    incident_id = hashlib.sha256(
-        f"{service_name}-{time.time()}".encode()
-    ).hexdigest()[:12]
+    incident_id = hashlib.sha256(f"{service_name}-{time.time()}".encode()).hexdigest()[
+        :12
+    ]
     logger.info(
         "record_incident: agent=%s service=%s severity=%s id=%s",
         agent_id,
