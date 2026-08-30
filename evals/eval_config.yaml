@@ -1,0 +1,16 @@
+# DeployGuard Evaluation Configuration
+# Compatible with `agents-cli eval run` and pytest harness
+
+name: deployguard-evaluation-suite
+eval_dataset: evals/datasets/decision_benchmarks.jsonl
+
+metrics_to_run:
+  - multi_turn_task_success
+  - multi_turn_tool_use_quality
+  - safety
+  - decision_accuracy
+
+custom_metrics:
+  - name: decision_accuracy
+    description: "Evaluates whether the agent made the ground-truth rollback decision against deployment telemetry"
+    type: code_execution

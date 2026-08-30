@@ -17,9 +17,12 @@ from google.adk.events.event import Event
 from google.genai.types import Content, Part
 
 from deployguard.agents.base import BaseDeployGuardAgent
-from deployguard.cloud.embeddings import COSINE_THRESHOLD as _COSINE_THRESHOLD
-from deployguard.cloud.embeddings import DEFAULT_TOP_K as _DEFAULT_TOP_K
-from deployguard.cloud.embeddings import cosine_similarity, generate_embedding
+from deployguard.cloud.embeddings import (
+    COSINE_THRESHOLD as _COSINE_THRESHOLD,
+    DEFAULT_TOP_K as _DEFAULT_TOP_K,
+    cosine_similarity,
+    generate_embedding,
+)
 from deployguard.cloud.interfaces import DocumentStore
 from deployguard.cloud.stubs import MockFirestore
 from deployguard.security.sanitizer import LogSanitizer
@@ -83,9 +86,11 @@ class IncidentMemoryAgent(BaseDeployGuardAgent):
                 None,
                 [
                     sanitized.get("service_name", ""),
-                    sanitized.get("anomaly_type", ""),
                     sanitized.get("summary", ""),
                     sanitized.get("resolution", ""),
+                    " ".join(sanitized.get("affected_metrics", []))
+                    if isinstance(sanitized.get("affected_metrics"), list)
+                    else "",
                 ],
             )
         ).strip() or str(incident_id)
@@ -147,6 +152,19 @@ class IncidentMemoryAgent(BaseDeployGuardAgent):
         for doc in service_docs:
             emb = doc.get("embedding")
             if not emb:
+                doc_text = " ".join(
+                    filter(
+                        None,
+                        [
+                            doc.get("service_name", ""),
+                            doc.get("summary", ""),
+                            doc.get("resolution", ""),
+                            doc.get("version", ""),
+                        ],
+                    )
+                ).strip() or str(doc.get("deployment_id", ""))
+                emb = generate_embedding(doc_text)
+            if not emb:
                 continue
             score = cosine_similarity(query_embedding, emb)
             if score >= self.COSINE_THRESHOLD:
@@ -194,19 +212,11 @@ class IncidentMemoryAgent(BaseDeployGuardAgent):
                 state.deployment_id,
             )
 
-        # 2. Query for similar past incidents using vector search
-        anomaly_type = (
-            state.anomaly_signal.anomaly_type if state.anomaly_signal else ""
-        )
-        query_text = f"{state.service_name} {anomaly_type}".strip()
-        past_incidents = await self.find_similar_incidents(
-            service_name=state.service_name,
-            query_text=query_text or state.service_name,
-        )
-        # Exclude current deployment from results
+        # 2. Query for similar past incidents on the same service
+        all_incidents = await self.get_incidents(state.service_name)
         past_incidents = [
             inc
-            for inc in past_incidents
+            for inc in all_incidents
             if inc.get("deployment_id") != state.deployment_id
         ]
 

@@ -92,7 +92,6 @@ class MockFirestore:
         return [doc for _, doc in scored[:limit]]
 
 
-
 class MockMonitoring:
     """Stubs Google Cloud Monitoring (Metrics) interactions."""
 
