@@ -10,6 +10,7 @@ import { DecisionTraceStepper } from "@/components/traces/DecisionTraceStepper";
 import { SpanWaterfall } from "@/components/traces/SpanWaterfall";
 import { PostmortemDocumentViewer } from "@/components/postmortem/PostmortemDocumentViewer";
 import { FleetRegistryView } from "@/components/registry/FleetRegistryView";
+import { BorderBeam } from "@/components/ui/BorderBeam";
 import {
   useDashboardOverview,
   useTelemetryMetrics,
@@ -62,7 +63,8 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column: Quick Status & Governance Banner */}
               <div className="space-y-4">
-                <div className="p-5 rounded-xl border border-border bg-card/60 space-y-3">
+                <div className="p-5 rounded-xl border border-border bg-card/60 space-y-3 relative overflow-hidden">
+                  <BorderBeam size={180} duration={12} delay={0} colorFrom="#06b6d4" colorTo="#10b981" />
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono flex items-center gap-2">
                     <Activity className="w-4 h-4 text-cyan-400" />
                     Autonomous Protection SLA

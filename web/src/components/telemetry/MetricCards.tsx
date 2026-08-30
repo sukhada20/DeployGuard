@@ -10,7 +10,7 @@ interface MetricCardsProps {
   telemetry?: TelemetryMetrics;
 }
 
-const MetricCardItem: React.FC<{ metricKey: string; detail: MetricDetail }> = ({ metricKey, detail }) => {
+const MetricCardItem: React.FC<{ detail: MetricDetail }> = ({ detail }) => {
   const numRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -100,13 +100,13 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ telemetry }) => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <MetricCardItem metricKey="error_rate" detail={metrics.error_rate} />
-        <MetricCardItem metricKey="latency_p95" detail={metrics.latency_p95} />
-        <MetricCardItem metricKey="cpu_utilization" detail={metrics.cpu_utilization} />
-        <MetricCardItem metricKey="memory_utilization" detail={metrics.memory_utilization} />
-        <MetricCardItem metricKey="crash_count" detail={metrics.crash_count} />
-        <MetricCardItem metricKey="restart_count" detail={metrics.restart_count} />
-        <MetricCardItem metricKey="request_rate" detail={metrics.request_rate} />
+        <MetricCardItem detail={metrics.error_rate} />
+        <MetricCardItem detail={metrics.latency_p95} />
+        <MetricCardItem detail={metrics.cpu_utilization} />
+        <MetricCardItem detail={metrics.memory_utilization} />
+        <MetricCardItem detail={metrics.crash_count} />
+        <MetricCardItem detail={metrics.restart_count} />
+        <MetricCardItem detail={metrics.request_rate} />
       </div>
     </div>
   );

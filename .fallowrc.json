@@ -1,0 +1,13 @@
+{
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/out/**",
+    "**/.next/**",
+    "**/.venv/**",
+    "**/.pytest_cache/**",
+    "**/.git/**",
+    "**/.planning/**",
+    "**/dist/**",
+    "**/build/**"
+  ]
+}
