@@ -1,19 +1,19 @@
 ---
 gsd_state_version: 1.0
-current_phase: 05
-current_phase_name: Rollback Execution & Recovery Verification
-status: planning
-stopped_at: Phase 5 planned (3 plans)
-last_updated: "2026-08-30T08:40:26.529Z"
+current_phase: 06
+current_phase_name: Postmortem Generation & Operator Dashboard
+status: ready
+stopped_at: Phase 5 executed and verified (3 plans complete)
+last_updated: "2026-08-30T14:16:00.000Z"
 last_activity: 2026-08-30
-last_activity_desc: Phase 04 complete, transitioned to Phase 05
-state_head: ac3c5d179c4c84b5fdfae78dddaa1379ebdcd1e8
+last_activity_desc: Phase 05 complete, transitioned to Phase 06
+state_head: 5f96a9d
 progress:
   total_phases: 7
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 20
-  completed_plans: 17
-  percent: 57
+  completed_plans: 20
+  percent: 71
 ---
 
 # Project State
@@ -23,22 +23,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-29)
 
 **Core value:** Reduce deployment-related recovery time while making every autonomous production action explainable, policy-governed, and auditable.
-**Current focus:** Phase 04 — Google Cloud Platform & ADK Fleet Modernization
+**Current focus:** Phase 06 — Postmortem Generation & Operator Dashboard
 
 ## Current Position
 
-Phase: 05 — Rollback Execution & Recovery Verification
+Phase: 06 — Postmortem Generation & Operator Dashboard
 Plan: Not started
-Status: Ready to plan
-Last activity: 2026-08-30 — Phase 04 complete, transitioned to Phase 05
+Status: Ready to discuss / plan Phase 6
+Last activity: 2026-08-30 — Phase 05 complete, transitioned to Phase 06
 
-Progress: [▓▓▓░░░░] 43%
+Progress: [▓▓▓▓▓░░] 71%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 9
+- Total plans completed: 20
 - Average duration: —
 - Total execution time: 0 hours
 
@@ -47,12 +47,15 @@ Progress: [▓▓▓░░░░] 43%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 | 5 | - | - |
-| 04 | 4 | - | - |
+| 2 | 4 | - | - |
+| 3 | 4 | - | - |
+| 4 | 4 | - | - |
+| 5 | 3 | - | - |
 
 **Recent Trend:**
 
-- Last 5 plans: —
-- Trend: —
+- Last 5 plans: Complete
+- Trend: Stable
 
 *Updated after each plan completion*
 
@@ -60,27 +63,24 @@ Progress: [▓▓▓░░░░] 43%
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
+Decisions are logged in PROJECT.md Key Decisions table and Phase CONTEXT.md files.
+Recent Phase 5 decisions:
 
-- **Phase 1**: Stubs are deterministic + injectable via constructor params for testing.
-- **Phase 1**: Stubs conform to formal `typing.Protocol` interfaces (`MetricsSource`, etc.) to decouple agent logic from concrete APIs.
-- **Phase 1**: Stubs use fixture-file driven data loading for easily configurable test scenarios.
-- **Phase 1**: Stubs are async with sync fallback to match real client signatures.
-- **Init**: Build a fleet of specialized agents (not a single DevOps chatbot) — separation of duties
-- **Init**: Use deterministic rules and policy around LLM reasoning — not unilateral LLM control
-- **Init**: Firestore as initial incident memory bank — Google Cloud target, persistent historical context
-- **Init**: Route sensitive actions through an Agent Gateway — single enforceable policy boundary
-- **Init**: Target Google Cloud first (Cloud Run, Cloud Deploy, Monitoring, Logging, IAM, Firestore, Gemini, Model Armor)
-- **Init**: Prioritize simulated end-to-end failure-and-recovery demo — complete observable workflow over disconnected integrations
+- **D-01 (Rollback Target Resolution)**: Strict state & decision trace lookup with fallback to standard N-1 release tag convention (`release-{service}-{stable_version}`).
+- **D-02 (Rollback Execution Tracking)**: Cloud Deploy client invocation tracking operation ID in state.
+- **D-03 (Recovery Verification Timing)**: Configurable stabilization delay followed by multi-iteration metric sampling across 7 dimensions.
+- **D-04 (Recovery Verdict Thresholds)**: Multi-metric strict tolerance: `recovered` (all 7 <= 1.15x baseline, 0 crashes/restarts), `degraded`, or `inconclusive`.
+- **D-05 (OpenTelemetry Exporter Setup)**: Dual exporter architecture (`InMemorySpanExporter` in mock mode, `CloudTraceSpanExporter` in live GCP mode).
+- **D-06 (Trace Hierarchy & Context)**: Root trace `deployguard.deployment` with child spans for agent lifecycle steps and W3C TraceContext propagation.
+- **D-07 (Gateway Enforcement & Refusal)**: Two-tier defense validating IAM permission and authorized DecisionTrace before Cloud Deploy execution.
 
 ### Pending Todos
 
-None yet.
+None.
 
 ### Blockers/Concerns
 
-None yet.
+None.
 
 ## Deferred Items
 
@@ -90,6 +90,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-30T08:40:26.460Z
-Stopped at: Phase 5 planned (3 plans)
-Resume file: .planning/phases/05-rollback-execution-recovery-verification/05-01-PLAN.md
+Last session: 2026-08-30T14:16:00.000Z
+Stopped at: Phase 5 executed and verified
+Resume file: .planning/phases/06-postmortem-dashboard/
+

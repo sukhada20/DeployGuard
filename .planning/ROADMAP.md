@@ -135,13 +135,13 @@ Plans:
   3. After rollback, Deploy Monitor Agent re-polls metrics and writes a recovery verdict (recovered / degraded / inconclusive) to workflow state.
   4. OpenTelemetry spans are emitted for deploy, anomaly, decision, rollback, and recovery events.
 
-**Plans**: 3 plans
+**Plans**: 3/3 plans executed
 
 Plans:
 
-- [ ] 05-01: Rollback Agent — gateway authorization flow, Cloud Deploy call, policy-blocked path, workflow state update
-- [ ] 05-02: Recovery verification loop — post-rollback metric polling, verdict computation, state write
-- [ ] 05-03: OpenTelemetry instrumentation — span definitions, trace context propagation, Cloud Monitoring correlation
+- [x] 05-01: Rollback Agent — gateway authorization flow, Cloud Deploy call, policy-blocked path, workflow state update
+- [x] 05-02: Recovery verification loop — post-rollback metric polling, verdict computation, state write
+- [x] 05-03: OpenTelemetry instrumentation — span definitions, trace context propagation, Cloud Monitoring correlation
 
 ### Phase 6: Postmortem Generation & Operator Dashboard
 
@@ -195,10 +195,10 @@ Plans:
 | 2. Anomaly Detection & Incident Memory | 4/4 | Complete    | 2026-08-29 |
 | 3. Decisioning Engine & Governance | 4/4 | Complete    | 2026-08-29 |
 | 4. Google Cloud Platform & ADK Fleet Modernization | 4/4 | Complete    | 2026-08-30 |
-| 5. Rollback Execution & Recovery Verification | 0/3 | Not started | - |
+| 5. Rollback Execution & Recovery Verification | 3/3 | Complete    | 2026-08-30 |
 | 6. Postmortem Generation & Operator Dashboard | 0/4 | Not started | - |
 | 7. End-to-End Demo & Polish | 0/4 | Not started | - |
 
 ---
 *Roadmap defined: 2026-08-23*
-*Last updated: 2026-08-30 after adding Phase 4 GCP & ADK Modernization*
+*Last updated: 2026-08-30 after completing Phase 5 Rollback Execution & Recovery Verification*
