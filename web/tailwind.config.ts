@@ -43,38 +43,75 @@ const config: Config = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        // Semantic highlight accents
         emerald: {
-          500: "#10b981",
+          DEFAULT: "hsl(var(--emerald))",
+          foreground: "hsl(var(--emerald-foreground))",
           400: "#34d399",
+          500: "#10b981",
+          600: "#059669",
         },
         rose: {
-          500: "#f43f5e",
+          DEFAULT: "hsl(var(--rose))",
+          foreground: "hsl(var(--rose-foreground))",
           400: "#fb7185",
+          500: "#f43f5e",
+          600: "#e11d48",
         },
         amber: {
-          500: "#f59e0b",
+          DEFAULT: "hsl(var(--amber))",
+          foreground: "hsl(var(--amber-foreground))",
           400: "#fbbf24",
+          500: "#f59e0b",
+          600: "#d97706",
         },
         cyan: {
-          500: "#06b6d4",
+          DEFAULT: "hsl(var(--cyan))",
+          foreground: "hsl(var(--cyan-foreground))",
           400: "#22d3ee",
-        }
+          500: "#06b6d4",
+          600: "#0891b2",
+        },
+        indigo: {
+          DEFAULT: "hsl(var(--indigo))",
+          foreground: "hsl(var(--indigo-foreground))",
+          400: "#818cf8",
+          500: "#6366f1",
+          600: "#4f46e5",
+        },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        none: "0px",
+        sm: "calc(var(--radius) - 2px)",
+        DEFAULT: "var(--radius)",
+        md: "calc(var(--radius) + 2px)",
+        lg: "calc(var(--radius) + 4px)",
       },
-      animation: {
-        "border-beam": "border-beam calc(var(--duration)*1s) infinite linear",
-        "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      fontFamily: {
+        mono: [
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "Monaco",
+          "Consolas",
+          "Liberation Mono",
+          "Courier New",
+          "monospace",
+        ],
       },
       keyframes: {
-        "border-beam": {
-          "100%": {
-            "offset-distance": "100%",
-          },
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
       },
     },
   },
