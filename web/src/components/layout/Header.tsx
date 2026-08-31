@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ShieldCheck, Server, Home } from "lucide-react";
+import { ShieldCheck, Server } from "lucide-react";
 import { DashboardOverview } from "@/types/api";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -19,11 +19,12 @@ export const Header: React.FC<HeaderProps> = ({ overview, isSseConnected }) => {
   return (
     <div className="sticky top-3 z-40 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto w-full">
       <header className="border-2 border-border bg-card/90 backdrop-blur-md px-4 sm:px-6 py-2.5 shadow-2xl flex items-center justify-between gap-4">
-        {/* Left: Brand & Overview button with Wipe Animation */}
-        <div className="flex items-center gap-3">
+        {/* Left: Brand with Wipe Animation */}
+        <div className="flex items-center gap-2.5">
           <Link
             href="/"
             className="relative overflow-hidden group px-2 py-1 flex items-center gap-2 border border-transparent hover:border-border transition-colors select-none"
+            title="DeployGuard Home"
           >
             <span className="absolute inset-0 bg-foreground translate-y-full group-hover:translate-y-0 transition-transform duration-200 ease-out pointer-events-none" />
             <span className="relative z-10 text-foreground group-hover:text-background transition-colors duration-200 flex items-center gap-2">
@@ -34,21 +35,9 @@ export const Header: React.FC<HeaderProps> = ({ overview, isSseConnected }) => {
             </span>
           </Link>
 
-          <Badge variant="brutalist" className="text-[10px] px-1.5 py-0.5 font-mono font-bold hidden sm:inline-flex">
+          <Badge variant="brutalist" className="text-[10px] px-1.5 py-0.5 font-mono font-bold">
             CONSOLE
           </Badge>
-
-          {/* Overview button with Bottom-to-Top Wipe */}
-          <Link
-            href="/"
-            className="relative overflow-hidden group h-8 px-3 border-2 border-border bg-card flex items-center gap-1.5 font-mono text-xs font-bold uppercase hover:border-foreground transition-colors select-none"
-          >
-            <span className="absolute inset-0 bg-foreground translate-y-full group-hover:translate-y-0 transition-transform duration-200 ease-out pointer-events-none" />
-            <span className="relative z-10 text-foreground group-hover:text-background transition-colors duration-200 flex items-center gap-1.5">
-              <Home className="w-3.5 h-3.5" />
-              <span>Overview</span>
-            </span>
-          </Link>
         </div>
 
         {/* Center: Minimal Active Service Strip */}
