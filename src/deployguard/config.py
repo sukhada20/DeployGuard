@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     gateway_strict_mode: bool = False  # False in dev, True in production
 
     # Reasoning & Thresholds
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3.5-flash"
     min_confidence_threshold_prod: float = 0.85
     min_confidence_threshold_stage: float = 0.70
     max_deployment_age_seconds: int = 1800

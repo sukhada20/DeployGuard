@@ -10,7 +10,7 @@ Provides two base agent patterns:
 
 Model selection
 ---------------
-Set ``DEPLOYGUARD_MODEL_FAST`` to override the default fast model (gemini-2.5-flash).
+Set ``DEPLOYGUARD_MODEL_FAST`` to override the default fast model (gemini-3.5-flash).
 Set ``DEPLOYGUARD_MODEL_DECISION`` to override the decision model (gemini-2.5-pro).
 """
 
@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 # Model configuration                                                          #
 # --------------------------------------------------------------------------- #
 
-DEFAULT_MODEL_FAST: str = os.environ.get("DEPLOYGUARD_MODEL_FAST", "gemini-2.5-flash")
+DEFAULT_MODEL_FAST: str = os.environ.get("DEPLOYGUARD_MODEL_FAST", "gemini-3.5-flash")
 """Default model for fast, high-throughput agents (monitoring, memory, postmortem)."""
 
 DEFAULT_MODEL_DECISION: str = os.environ.get(

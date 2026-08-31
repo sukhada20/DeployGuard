@@ -27,7 +27,7 @@ class GeminiReasoningClient:
 
     def __init__(
         self,
-        model: str = "gemini-2.5-flash",
+        model: str = "gemini-3.5-flash",
         safety_filter: ModelArmorFilter | None = None,
     ) -> None:
         self.model = model
