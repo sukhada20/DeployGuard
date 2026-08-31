@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface Node {
   x: number;
   y: number;
-  baseX: number;
-  baseY: number;
   vx: number;
   vy: number;
   size: number;
@@ -23,6 +21,7 @@ interface Packet {
 
 export function AgenticBackground() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [mounted, setMounted] = useState(false);
   const mouseRef = useRef({
     targetX: -1000,
     targetY: -1000,
@@ -32,6 +31,8 @@ export function AgenticBackground() {
   });
 
   useEffect(() => {
+    setMounted(true);
+
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.targetX = e.clientX;
       mouseRef.current.targetY = e.clientY;
@@ -55,15 +56,16 @@ export function AgenticBackground() {
   }, []);
 
   useEffect(() => {
+    if (!mounted) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d", { alpha: true });
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     let animationFrameId: number;
-    let width = 0;
-    let height = 0;
+    let width = window.innerWidth;
+    let height = window.innerHeight;
 
     const resize = () => {
       if (!canvas) return;
@@ -72,86 +74,60 @@ export function AgenticBackground() {
       height = window.innerHeight;
       canvas.width = width * dpr;
       canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
     resize();
     window.addEventListener("resize", resize);
 
-    // Subtle technical telemetry tags
+    // SRE & Agent telemetry labels
     const LABELS = [
-      "deploy_monitor:active",
-      "gemini:reasoning",
-      "clouddeploy:armed",
-      "otel:span_trace",
+      "agent:deploy_monitor",
+      "gemini:reasoning_engine",
+      "cloud_deploy:armed",
+      "otel:span_0x4f92",
       "mttr:38.4s",
-      "model_armor:secure",
+      "model_armor:active",
       "firestore:vector_004",
       "policy:5_of_5_pass",
-      "gke:gateway_verified",
-      "run:sampling_1000ms",
+      "gke:ingress_ok",
+      "telemetry:sampling_1000ms",
+      "rollback:target_v2.3.9",
+      "status:autonomous_active",
     ];
 
-    // Initialize Stable Network Nodes
-    const count = Math.max(20, Math.min(36, Math.floor((width * height) / 32000)));
-    const nodes: Node[] = Array.from({ length: count }, (_, i) => {
-      const x = Math.random() * width;
-      const y = Math.random() * height;
-      return {
-        x,
-        y,
-        baseX: x,
-        baseY: y,
-        vx: (Math.random() - 0.5) * 0.25,
-        vy: (Math.random() - 0.5) * 0.25,
-        size: Math.random() > 0.65 ? 2.5 : 1.5,
-        label: i < LABELS.length ? LABELS[i] : undefined,
-        phase: Math.random() * Math.PI * 2,
-      };
-    });
+    // Generate balanced network nodes
+    const nodeCount = Math.max(24, Math.min(40, Math.floor((width * height) / 26000)));
+    const nodes: Node[] = Array.from({ length: nodeCount }, (_, i) => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
+      size: Math.random() > 0.6 ? 4 : 2.5,
+      label: i < LABELS.length ? LABELS[i] : undefined,
+      phase: Math.random() * Math.PI * 2,
+    }));
 
     const packets: Packet[] = [];
-    const maxPackets = 10;
+    const maxPackets = 14;
     let time = 0;
 
     const render = () => {
-      time += 0.01;
+      time += 0.015;
       ctx.clearRect(0, 0, width, height);
 
       const isDark = document.documentElement.classList.contains("dark");
 
-      // Smooth mouse lerp (subtle inertia, no frame drops or resets)
+      // Smooth mouse lerp
       const mouse = mouseRef.current;
       if (mouse.active) {
-        mouse.currX += (mouse.targetX - mouse.currX) * 0.08;
-        mouse.currY += (mouse.targetY - mouse.currY) * 0.08;
+        mouse.currX += (mouse.targetX - mouse.currX) * 0.06;
+        mouse.currY += (mouse.targetY - mouse.currY) * 0.06;
       }
 
-      // 1. Crisp Architectural Grid Lines
-      const gridSize = 72;
-      ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.035)" : "rgba(0, 0, 0, 0.04)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let x = 0; x < width; x += gridSize) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
-      }
-      for (let y = 0; y < height; y += gridSize) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-      }
-      ctx.stroke();
-
-      // 2. Corner Crosshairs at Major Grid Intersections
-      ctx.fillStyle = isDark ? "rgba(255, 255, 255, 0.14)" : "rgba(0, 0, 0, 0.14)";
-      for (let x = 0; x < width; x += gridSize * 2) {
-        for (let y = 0; y < height; y += gridSize * 2) {
-          ctx.fillRect(x - 2.5, y, 6, 1);
-          ctx.fillRect(x, y - 2.5, 1, 6);
-        }
-      }
-
-      // 3. Ambient Mouse Radial Glow (toned down, pronounced & smooth)
+      // 1. Draw Subtle Ambient Spotlight around Mouse
       if (mouse.active && mouse.currX > 0 && mouse.currY > 0) {
         const glow = ctx.createRadialGradient(
           mouse.currX,
@@ -159,89 +135,104 @@ export function AgenticBackground() {
           0,
           mouse.currX,
           mouse.currY,
-          220
+          260
         );
-        glow.addColorStop(0, isDark ? "rgba(255, 255, 255, 0.045)" : "rgba(0, 0, 0, 0.035)");
+        glow.addColorStop(0, isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)");
         glow.addColorStop(1, "transparent");
         ctx.fillStyle = glow;
         ctx.beginPath();
-        ctx.arc(mouse.currX, mouse.currY, 220, 0, Math.PI * 2);
+        ctx.arc(mouse.currX, mouse.currY, 260, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // 4. Update & Draw Agent Nodes
+      // 2. Update and Draw Nodes & Connecting Links
       for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
 
-        // Smooth continuous drift with harmonic sine floating
-        node.x += node.vx + Math.sin(time + node.phase) * 0.15;
-        node.y += node.vy + Math.cos(time + node.phase) * 0.15;
+        // Smooth sinusoidal floating
+        node.x += node.vx + Math.sin(time + node.phase) * 0.2;
+        node.y += node.vy + Math.cos(time + node.phase) * 0.2;
 
-        // Wrap-around screen bounds
-        if (node.x < 0) node.x = width;
-        if (node.x > width) node.x = 0;
-        if (node.y < 0) node.y = height;
-        if (node.y > height) node.y = 0;
+        // Wrap around bounds
+        if (node.x < -20) node.x = width + 20;
+        if (node.x > width + 20) node.x = -20;
+        if (node.y < -20) node.y = height + 20;
+        if (node.y > height + 20) node.y = -20;
 
-        // Check distance to smoothed cursor
+        // Distance to smooth mouse
         let mouseDist = 999;
         if (mouse.active) {
           const dx = node.x - mouse.currX;
           const dy = node.y - mouse.currY;
           mouseDist = Math.sqrt(dx * dx + dy * dy);
         }
-        const isNearMouse = mouseDist < 160;
-        const proximityRatio = isNearMouse ? 1 - mouseDist / 160 : 0;
+        const isNearMouse = mouseDist < 180;
+        const proximityRatio = isNearMouse ? 1 - mouseDist / 180 : 0;
 
-        // Node fill color (pronounces slightly when near cursor)
-        ctx.fillStyle = isDark
-          ? `rgba(255, 255, 255, ${0.45 + proximityRatio * 0.4})`
-          : `rgba(0, 0, 0, ${0.45 + proximityRatio * 0.35})`;
-
-        const renderSize = node.size + proximityRatio * 1.5;
-        ctx.fillRect(node.x - renderSize / 2, node.y - renderSize / 2, renderSize, renderSize);
-
-        // Draw Telemetry Tag
-        if (node.label) {
-          ctx.font = "9px ui-monospace, SFMono-Regular, Menlo, monospace";
-          ctx.fillStyle = isDark
-            ? `rgba(255, 255, 255, ${0.3 + proximityRatio * 0.45})`
-            : `rgba(0, 0, 0, ${0.4 + proximityRatio * 0.4})`;
-          ctx.fillText(`[${node.label}]`, node.x + 6, node.y + 3);
-        }
-
-        // Draw Inter-Node Connection Lines
+        // Draw connections to nearby nodes
         for (let j = i + 1; j < nodes.length; j++) {
           const other = nodes[j];
           const dx = node.x - other.x;
           const dy = node.y - other.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < 160) {
-            const alphaRatio = 1 - dist / 160;
+          if (dist < 170) {
+            const alphaRatio = 1 - dist / 170;
+            const lineAlpha = (isDark ? 0.08 : 0.07) + alphaRatio * (isDark ? 0.22 : 0.18);
+
             ctx.strokeStyle = isDark
-              ? `rgba(255, 255, 255, ${0.05 + alphaRatio * 0.14})`
-              : `rgba(0, 0, 0, ${0.04 + alphaRatio * 0.12})`;
+              ? `rgba(255, 255, 255, ${lineAlpha})`
+              : `rgba(0, 0, 0, ${lineAlpha})`;
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(node.x, node.y);
             ctx.lineTo(other.x, other.y);
             ctx.stroke();
 
-            // Spawn data packet along active connection
-            if (packets.length < maxPackets && Math.random() < 0.003) {
+            // Spawn data packet along connection line
+            if (packets.length < maxPackets && Math.random() < 0.004) {
               packets.push({
                 fromIndex: i,
                 toIndex: j,
                 progress: 0,
-                speed: 0.006 + Math.random() * 0.008,
+                speed: 0.007 + Math.random() * 0.01,
               });
             }
           }
         }
+
+        // Draw Node Point & Halo
+        const nodeAlpha = (isDark ? 0.55 : 0.5) + proximityRatio * 0.45;
+        ctx.fillStyle = isDark
+          ? `rgba(255, 255, 255, ${nodeAlpha})`
+          : `rgba(0, 0, 0, ${nodeAlpha})`;
+
+        const r = node.size + proximityRatio * 2;
+        ctx.fillRect(node.x - r / 2, node.y - r / 2, r, r);
+
+        // Subtle outer pulse halo
+        if (node.size > 3 || isNearMouse) {
+          ctx.strokeStyle = isDark
+            ? `rgba(255, 255, 255, ${0.15 + proximityRatio * 0.3})`
+            : `rgba(0, 0, 0, ${0.12 + proximityRatio * 0.25})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, r + 4 + Math.sin(time * 2 + node.phase) * 2, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // Draw Monospace Telemetry Label
+        if (node.label) {
+          ctx.font = "10px ui-monospace, SFMono-Regular, Menlo, monospace";
+          const textAlpha = (isDark ? 0.35 : 0.4) + proximityRatio * 0.5;
+          ctx.fillStyle = isDark
+            ? `rgba(255, 255, 255, ${textAlpha})`
+            : `rgba(0, 0, 0, ${textAlpha})`;
+          ctx.fillText(`[${node.label}]`, node.x + 8, node.y + 3);
+        }
       }
 
-      // 5. Draw Animated Data Packets (Smooth motion along links)
+      // 3. Draw Traveling Data Packets
       for (let p = packets.length - 1; p >= 0; p--) {
         const pkt = packets[p];
         pkt.progress += pkt.speed;
@@ -257,8 +248,20 @@ export function AgenticBackground() {
         const px = from.x + (to.x - from.x) * pkt.progress;
         const py = from.y + (to.y - from.y) * pkt.progress;
 
-        ctx.fillStyle = isDark ? "rgba(255, 255, 255, 0.85)" : "rgba(0, 0, 0, 0.8)";
-        ctx.fillRect(px - 1.5, py - 1.5, 3, 3);
+        // Bright packet
+        ctx.fillStyle = isDark ? "rgba(255, 255, 255, 0.95)" : "rgba(0, 0, 0, 0.9)";
+        ctx.fillRect(px - 2, py - 2, 4, 4);
+
+        // Packet tracer trail
+        const trailProgress = Math.max(0, pkt.progress - 0.05);
+        const tx = from.x + (to.x - from.x) * trailProgress;
+        const ty = from.y + (to.y - from.y) * trailProgress;
+        ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.4)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(px, py);
+        ctx.stroke();
       }
 
       animationFrameId = requestAnimationFrame(render);
@@ -270,11 +273,51 @@ export function AgenticBackground() {
       window.removeEventListener("resize", resize);
       cancelAnimationFrame(animationFrameId);
     };
-  }, []); // Run ONCE on mount, NEVER teardown on mousemove!
+  }, [mounted]);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none" aria-hidden="true">
+      {/* 1. Visible CSS Architectural Grid */}
+      <div
+        className="absolute inset-0 opacity-[0.06] dark:opacity-[0.08]"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, currentColor 1px, transparent 1px),
+            linear-gradient(to bottom, currentColor 1px, transparent 1px)
+          `,
+          backgroundSize: "64px 64px",
+        }}
+      />
+
+      {/* 2. Micro Dot Matrix Pattern */}
+      <div
+        className="absolute inset-0 opacity-[0.12] dark:opacity-[0.15]"
+        style={{
+          backgroundImage: `radial-gradient(circle, currentColor 1.2px, transparent 1.2px)`,
+          backgroundSize: "32px 32px",
+        }}
+      />
+
+      {/* 3. Deep Ambient Atmospheric Depth Gradients */}
+      <div className="absolute -top-40 -right-40 w-96 h-96 bg-foreground/[0.03] rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-foreground/[0.03] rounded-full blur-3xl pointer-events-none" />
+
+      {/* 4. Live Canvas Node & Telemetry Stream */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
+
+      {/* 5. Peripheral Corner HUD Coordinates */}
+      <div className="absolute top-3 left-4 font-mono text-[9px] text-muted-foreground/50 tracking-wider hidden md:block">
+        + 0x00_FLEET_ROOT · AUTONOMOUS_GOVERNANCE
+      </div>
+      <div className="absolute top-3 right-4 font-mono text-[9px] text-muted-foreground/50 tracking-wider hidden md:block">
+        OTEL_SPAN_STREAM · SAMPLING_1000MS +
+      </div>
+      <div className="absolute bottom-3 left-4 font-mono text-[9px] text-muted-foreground/50 tracking-wider hidden md:block">
+        + GKE_CLOUD_DEPLOY · ARMORED_GATEWAY
+      </div>
+      <div className="absolute bottom-3 right-4 font-mono text-[9px] text-muted-foreground/50 tracking-wider hidden md:block">
+        VERTEX_EMBED_004 · 5_OF_5_POLICIES_PASS +
+      </div>
     </div>
   );
 }
