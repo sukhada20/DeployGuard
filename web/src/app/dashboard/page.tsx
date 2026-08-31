@@ -59,7 +59,7 @@ export default function DashboardPage() {
           {/* Vertically Stacked Console Tabs */}
           <TabsNav activeTab={activeTab} onTabChange={setActiveTab} />
 
-          {/* Autonomous SLA Protection Banner in Sidebar */}
+          {/* Autonomous SLA Protection Section */}
           <Card className="p-4 space-y-3.5 border-2 border-border bg-card/90 backdrop-blur-sm shadow-sm">
             <div className="flex items-center justify-between border-b border-border pb-2.5">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono flex items-center gap-1.5">
@@ -92,6 +92,9 @@ export default function DashboardPage() {
             </div>
           </Card>
 
+          {/* Trigger Anomaly Rollback Section (Placed directly below Autonomous Protection SLA) */}
+          <IncidentSimulationTrigger />
+
           {/* Quick Active Trace Card */}
           <Card className="p-3.5 border-2 border-border bg-card/90 backdrop-blur-sm flex items-center justify-between shadow-sm">
             <div>
@@ -112,11 +115,8 @@ export default function DashboardPage() {
           </Card>
         </aside>
 
-        {/* Right Main Content Area */}
+        {/* Right Main Content Workspace */}
         <section className="flex-1 min-w-0 w-full space-y-6">
-          {/* Interactive Simulation Toolbar */}
-          <IncidentSimulationTrigger />
-
           {/* TAB 1: Live Operations & Telemetry */}
           {activeTab === "operations" && (
             <div className="space-y-6">

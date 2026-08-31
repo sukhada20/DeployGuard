@@ -12,75 +12,70 @@ export function IncidentSimulationTrigger() {
 
   const handleSimulate = async () => {
     setIsRunning(true);
-    setSimStep("Injecting 14.5x Error Spike on checkout-service...");
+    setSimStep("Injecting 14.5x Error Spike...");
 
     setTimeout(() => {
-      setSimStep("Deploy Monitor detected statistical threshold violation (1.25x)...");
+      setSimStep("Deploy Monitor detected 1.25x deviation...");
     }, 1200);
 
     setTimeout(() => {
-      setSimStep("Incident Memory matched past resolution (Cosine sim: 0.94)...");
+      setSimStep("Incident Memory matched vectors (0.94)...");
     }, 2400);
 
     setTimeout(() => {
-      setSimStep("Decision Agent evaluated Gemini reasoning + 5/5 Policy safety gates passed...");
+      setSimStep("Decision Agent: 5/5 Safety Gates passed...");
     }, 3600);
 
     setTimeout(() => {
-      setSimStep("Rollback Agent dispatched Cloud Deploy rollback to stable v2.3.9...");
+      setSimStep("Rollback Agent: Cloud Deploy armed...");
     }, 4800);
 
     setTimeout(() => {
-      setSimStep("Recovery verified in 38.4s! Postmortem generated.");
+      setSimStep("Recovered in 38.4s! Postmortem saved.");
       setIsRunning(false);
     }, 6000);
   };
 
   return (
-    <Card className="p-4 sm:p-5 border-2 border-border bg-card/90 backdrop-blur-sm space-y-3 shadow-md">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Zap className="w-5 h-5 text-foreground shrink-0" />
-          <div>
-            <div className="flex items-center gap-2.5 mb-0.5">
-              <span className="font-mono font-bold text-sm uppercase text-foreground">
-                Autonomous Rollback Simulation Trigger
-              </span>
-              <Badge variant="brutalist" className="text-[10px] px-1.5 py-0.5 font-mono font-bold">
-                INTERACTIVE SRE TEST
-              </Badge>
-            </div>
-            <p className="text-xs sm:text-sm text-muted-foreground font-sans">
-              Inject a simulated post-deployment anomaly to test the autonomous multi-agent governance pipeline.
-            </p>
-          </div>
+    <Card className="p-4 space-y-3 border-2 border-border bg-card/90 backdrop-blur-sm shadow-sm">
+      <div className="flex items-center justify-between border-b border-border pb-2.5">
+        <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <Zap className="w-4 h-4 text-foreground" />
+          <span>Incident Simulation</span>
         </div>
-
-        <Button
-          variant="brutalistPrimary"
-          size="sm"
-          disabled={isRunning}
-          onClick={handleSimulate}
-          className="h-10 px-5 text-xs sm:text-sm font-mono font-bold uppercase gap-2 shrink-0 shadow-md"
-        >
-          {isRunning ? (
-            <>
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              <span>Simulating...</span>
-            </>
-          ) : (
-            <>
-              <Play className="w-4 h-4" />
-              <span>Trigger Anomaly Rollback</span>
-            </>
-          )}
-        </Button>
+        <Badge variant="brutalist" className="text-[10px] px-1.5 py-0 font-mono font-bold">
+          SRE TEST
+        </Badge>
       </div>
 
+      <p className="text-xs text-muted-foreground font-sans leading-relaxed">
+        Inject a simulated post-deployment metric spike to test the autonomous multi-agent rollback pipeline.
+      </p>
+
+      <Button
+        variant="brutalistPrimary"
+        size="sm"
+        disabled={isRunning}
+        onClick={handleSimulate}
+        className="w-full h-9 px-4 text-xs font-mono font-bold uppercase gap-2 shadow-sm"
+      >
+        {isRunning ? (
+          <>
+            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            <span>Simulating Rollback...</span>
+          </>
+        ) : (
+          <>
+            <Play className="w-3.5 h-3.5" />
+            <span>Trigger Anomaly Rollback</span>
+          </>
+        )}
+      </Button>
+
       {simStep && (
-        <div className="p-3 border-2 border-border bg-muted/40 font-mono text-xs sm:text-sm text-foreground flex items-center gap-2.5">
-          <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shrink-0" />
-          <span className="font-semibold">{simStep}</span>
+        <div className="p-2.5 border-2 border-border bg-muted/40 font-mono text-xs text-foreground flex items-center gap-2">
+          <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shrink-0" />
+          <span className="font-semibold truncate">{simStep}</span>
         </div>
       )}
     </Card>
