@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 interface Node {
   x: number;
@@ -23,6 +24,8 @@ export function AgenticBackground() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseRef = useRef({ x: -1000, y: -1000, targetX: -1000, targetY: -1000, active: false });
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
+  const isDashboard = pathname?.startsWith("/dashboard");
 
   useEffect(() => {
     setMounted(true);
@@ -87,27 +90,33 @@ export function AgenticBackground() {
       "postmortem:generator_ready",
     ];
 
-    // Initialize 36 to 52 Agent Nodes
-    const nodeCount = Math.max(32, Math.min(52, Math.floor((width * height) / 20000)));
+    // Node count: lighter on dashboard
+    const baseDensity = isDashboard ? 35000 : 20000;
+    const minNodes = isDashboard ? 18 : 32;
+    const maxNodes = isDashboard ? 28 : 52;
+    const nodeCount = Math.max(minNodes, Math.min(maxNodes, Math.floor((width * height) / baseDensity)));
+
+    const speedScale = isDashboard ? 0.35 : 1.0;
+
     const nodes: Node[] = Array.from({ length: nodeCount }, (_, i) => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.5,
-      size: Math.random() > 0.5 ? 5.5 : 4,
+      vx: (Math.random() - 0.5) * 0.4 * speedScale,
+      vy: (Math.random() - 0.5) * 0.4 * speedScale,
+      size: isDashboard ? 3 : (Math.random() > 0.5 ? 5.5 : 4),
       pulse: Math.random() * Math.PI * 2,
-      label: i < LABELS.length ? LABELS[i] : undefined,
+      label: !isDashboard && i < LABELS.length ? LABELS[i] : undefined,
     }));
 
     const packets: Packet[] = [];
-    const maxPackets = 18;
+    const maxPackets = isDashboard ? 4 : 18;
     let time = 0;
     let scanY = 0;
 
     const loop = () => {
       if (!isRunning) return;
 
-      time += 0.02;
+      time += isDashboard ? 0.008 : 0.02;
       ctx.clearRect(0, 0, width, height);
 
       const isDark = document.documentElement.classList.contains("dark");
@@ -119,19 +128,21 @@ export function AgenticBackground() {
         mouse.y += (mouse.targetY - mouse.y) * 0.08;
       }
 
-      // 1. Moving Telemetry Radar Beam
-      scanY = (scanY + 0.9) % height;
-      const scanGrad = ctx.createLinearGradient(0, scanY - 30, 0, scanY + 30);
-      scanGrad.addColorStop(0, "transparent");
-      scanGrad.addColorStop(0.5, isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)");
-      scanGrad.addColorStop(1, "transparent");
-      ctx.fillStyle = scanGrad;
-      ctx.fillRect(0, scanY - 30, width, 60);
+      // 1. Moving Telemetry Radar Beam (skipped or ultra subtle on dashboard)
+      if (!isDashboard) {
+        scanY = (scanY + 0.9) % height;
+        const scanGrad = ctx.createLinearGradient(0, scanY - 30, 0, scanY + 30);
+        scanGrad.addColorStop(0, "transparent");
+        scanGrad.addColorStop(0.5, isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.04)");
+        scanGrad.addColorStop(1, "transparent");
+        ctx.fillStyle = scanGrad;
+        ctx.fillRect(0, scanY - 30, width, 60);
+      }
 
       // 2. Cursor Ambient Spotlight
-      if (mouse.active && mouse.x > 0 && mouse.y > 0) {
+      if (mouse.active && mouse.x > 0 && mouse.y > 0 && !isDashboard) {
         const spotGrad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 320);
-        spotGrad.addColorStop(0, isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.08)");
+        spotGrad.addColorStop(0, isDark ? "rgba(255, 255, 255, 0.10)" : "rgba(0, 0, 0, 0.06)");
         spotGrad.addColorStop(1, "transparent");
         ctx.fillStyle = spotGrad;
         ctx.beginPath();
@@ -142,11 +153,11 @@ export function AgenticBackground() {
       // 3. Update & Draw Nodes
       for (let i = 0; i < nodes.length; i++) {
         const n = nodes[i];
-        n.pulse += 0.035;
+        n.pulse += isDashboard ? 0.015 : 0.035;
 
-        // Sinusoidal organic drift
-        n.x += n.vx + Math.sin(time + n.pulse) * 0.25;
-        n.y += n.vy + Math.cos(time + n.pulse) * 0.25;
+        // Drift
+        n.x += n.vx + Math.sin(time + n.pulse) * (isDashboard ? 0.08 : 0.25);
+        n.y += n.vy + Math.cos(time + n.pulse) * (isDashboard ? 0.08 : 0.25);
 
         // Boundary wrap
         if (n.x < -20) n.x = width + 20;
@@ -156,7 +167,7 @@ export function AgenticBackground() {
 
         // Proximity to cursor
         let mouseDist = 999;
-        if (mouse.active) {
+        if (mouse.active && !isDashboard) {
           const dx = n.x - mouse.x;
           const dy = n.y - mouse.y;
           mouseDist = Math.sqrt(dx * dx + dy * dy);
@@ -171,8 +182,10 @@ export function AgenticBackground() {
           const dy = n.y - n2.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < 170) {
-            const alpha = (1 - dist / 170) * (isDark ? 0.35 : 0.25) + (prox * 0.25);
+          const maxDist = isDashboard ? 130 : 170;
+          if (dist < maxDist) {
+            const lineBaseAlpha = isDashboard ? (isDark ? 0.12 : 0.08) : (isDark ? 0.35 : 0.25);
+            const alpha = (1 - dist / maxDist) * lineBaseAlpha + (prox * 0.2);
             ctx.strokeStyle = isDark
               ? `rgba(255, 255, 255, ${alpha})`
               : `rgba(0, 0, 0, ${alpha})`;
@@ -183,37 +196,42 @@ export function AgenticBackground() {
             ctx.stroke();
 
             // Spawn data packet
-            if (packets.length < maxPackets && Math.random() < 0.006) {
+            if (packets.length < maxPackets && Math.random() < (isDashboard ? 0.001 : 0.006)) {
               packets.push({
                 fromIndex: i,
                 toIndex: j,
                 progress: 0,
-                speed: 0.008 + Math.random() * 0.012,
+                speed: (0.004 + Math.random() * 0.008) * speedScale,
               });
             }
           }
         }
 
-        // Draw Node Square / Diamond
-        const nodeSize = n.size + prox * 3;
-        const nodeAlpha = isDark ? 0.85 + prox * 0.15 : 0.75 + prox * 0.2;
+        // Draw Node Square
+        const nodeSize = n.size + prox * 2;
+        const nodeAlpha = isDashboard
+          ? (isDark ? 0.35 : 0.25)
+          : (isDark ? 0.85 + prox * 0.15 : 0.75 + prox * 0.2);
+
         ctx.fillStyle = isDark
           ? `rgba(255, 255, 255, ${nodeAlpha})`
           : `rgba(0, 0, 0, ${nodeAlpha})`;
         ctx.fillRect(n.x - nodeSize / 2, n.y - nodeSize / 2, nodeSize, nodeSize);
 
-        // Pulse ring around node
-        const ringRadius = nodeSize * 2.2 + Math.sin(n.pulse) * 4;
-        ctx.strokeStyle = isDark
-          ? `rgba(255, 255, 255, ${0.25 + prox * 0.3})`
-          : `rgba(0, 0, 0, ${0.2 + prox * 0.25})`;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, ringRadius, 0, Math.PI * 2);
-        ctx.stroke();
+        // Pulse ring around node (landing only)
+        if (!isDashboard) {
+          const ringRadius = nodeSize * 2.2 + Math.sin(n.pulse) * 4;
+          ctx.strokeStyle = isDark
+            ? `rgba(255, 255, 255, ${0.25 + prox * 0.3})`
+            : `rgba(0, 0, 0, ${0.2 + prox * 0.25})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, ringRadius, 0, Math.PI * 2);
+          ctx.stroke();
+        }
 
-        // Monospace Telemetry Label
-        if (n.label) {
+        // Monospace Telemetry Label (landing only)
+        if (n.label && !isDashboard) {
           ctx.font = "bold 9px ui-monospace, SFMono-Regular, Menlo, monospace";
           const labelAlpha = isDark ? 0.65 + prox * 0.35 : 0.6 + prox * 0.35;
           ctx.fillStyle = isDark
@@ -239,37 +257,22 @@ export function AgenticBackground() {
         const currX = src.x + (tgt.x - src.x) * pkt.progress;
         const currY = src.y + (tgt.y - src.y) * pkt.progress;
 
-        ctx.fillStyle = isDark ? "rgba(255, 255, 255, 1.0)" : "rgba(0, 0, 0, 0.95)";
-        ctx.fillRect(currX - 3, currY - 3, 6, 6);
+        const packetAlpha = isDashboard ? (isDark ? 0.4 : 0.3) : (isDark ? 1.0 : 0.95);
+        ctx.fillStyle = isDark ? `rgba(255, 255, 255, ${packetAlpha})` : `rgba(0, 0, 0, ${packetAlpha})`;
+        ctx.fillRect(currX - 2, currY - 2, 4, 4);
 
-        // Glowing packet trail
-        const trailProg = Math.max(0, pkt.progress - 0.1);
-        const trailX = src.x + (tgt.x - src.x) * trailProg;
-        const trailY = src.y + (tgt.y - src.y) * trailProg;
+        if (!isDashboard) {
+          const trailProg = Math.max(0, pkt.progress - 0.1);
+          const trailX = src.x + (tgt.x - src.x) * trailProg;
+          const trailY = src.y + (tgt.y - src.y) * trailProg;
 
-        ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.6)" : "rgba(0, 0, 0, 0.5)";
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(trailX, trailY);
-        ctx.lineTo(currX, currY);
-        ctx.stroke();
-      }
-
-      // 5. Cursor Crosshair & Coordinate Readout
-      if (mouse.active && mouse.x > 0 && mouse.y > 0) {
-        ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.35)" : "rgba(0, 0, 0, 0.35)";
-        ctx.lineWidth = 1;
-
-        ctx.beginPath();
-        ctx.moveTo(mouse.x - 16, mouse.y);
-        ctx.lineTo(mouse.x + 16, mouse.y);
-        ctx.moveTo(mouse.x, mouse.y - 16);
-        ctx.lineTo(mouse.x, mouse.y + 16);
-        ctx.stroke();
-
-        ctx.font = "8px ui-monospace, SFMono-Regular, Menlo, monospace";
-        ctx.fillStyle = isDark ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0.7)";
-        ctx.fillText(`LOC:[${Math.round(mouse.x)},${Math.round(mouse.y)}]`, mouse.x + 12, mouse.y - 8);
+          ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.4)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(trailX, trailY);
+          ctx.lineTo(currX, currY);
+          ctx.stroke();
+        }
       }
 
       animId = requestAnimationFrame(loop);
@@ -282,7 +285,7 @@ export function AgenticBackground() {
       window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animId);
     };
-  }, [mounted]);
+  }, [mounted, isDashboard]);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none" aria-hidden="true">
@@ -290,7 +293,7 @@ export function AgenticBackground() {
       <div
         className="absolute inset-0 transition-opacity duration-1500 ease-out"
         style={{
-          opacity: mounted ? 0.18 : 0,
+          opacity: mounted ? (isDashboard ? 0.10 : 0.18) : 0,
           backgroundImage: `
             linear-gradient(to right, currentColor 1px, transparent 1px),
             linear-gradient(to bottom, currentColor 1px, transparent 1px)
@@ -302,7 +305,7 @@ export function AgenticBackground() {
       />
 
       {/* 2. Ambient Lighting Glow Orbs */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-foreground/[0.045] rounded-full blur-[140px] pointer-events-none" />
+      <div className={`absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-foreground/${isDashboard ? "[0.02]" : "[0.045]"} rounded-full blur-[140px] pointer-events-none`} />
 
       {/* 3. Canvas Node Layer */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
