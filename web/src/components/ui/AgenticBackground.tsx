@@ -285,7 +285,7 @@ export function AgenticBackground() {
   }, [mounted]);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none" aria-hidden="true">
+    <div className="fixed inset-0 pointer-events-none z-30 overflow-hidden select-none" aria-hidden="true">
       {/* 1. Engineering Coordinate Grid */}
       <div
         className="absolute inset-0 opacity-[0.08] dark:opacity-[0.12]"
