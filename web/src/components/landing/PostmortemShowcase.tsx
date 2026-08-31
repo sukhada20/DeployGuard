@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { FileText, Download, CheckCircle2, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Download, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

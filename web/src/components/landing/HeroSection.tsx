@@ -2,20 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import {
-  ShieldCheck,
-  AlertTriangle,
-  ArrowRight,
-  RotateCcw,
-  CheckCircle2,
-  Activity,
-  Zap,
-  Play,
-  RefreshCw,
-  Lock,
-} from "lucide-react";
+import { ShieldCheck, Play, ArrowRight, Activity, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
 export function HeroSection() {
@@ -23,31 +11,35 @@ export function HeroSection() {
   const [timer, setTimer] = useState(0);
 
   const runSimulation = () => {
+    if (simState !== "nominal" && simState !== "recovered") return;
     setSimState("spike");
     setTimer(0);
+
+    setTimeout(() => {
+      setSimState("analyzing");
+    }, 1000);
+
+    setTimeout(() => {
+      setSimState("policy");
+    }, 2200);
+
+    setTimeout(() => {
+      setSimState("rollback");
+    }, 3400);
+
+    setTimeout(() => {
+      setSimState("recovered");
+    }, 4800);
   };
 
   useEffect(() => {
-    if (simState === "nominal" || simState === "recovered") return;
-
-    const interval = setInterval(() => {
-      setTimer((prev) => +(prev + 0.1).toFixed(1));
-    }, 100);
-
-    const t1 = setTimeout(() => setSimState("analyzing"), 900);
-    const t2 = setTimeout(() => setSimState("policy"), 1900);
-    const t3 = setTimeout(() => setSimState("rollback"), 2900);
-    const t4 = setTimeout(() => {
-      setSimState("recovered");
-    }, 4200);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
-    };
+    let interval: NodeJS.Timeout;
+    if (simState !== "nominal" && simState !== "recovered") {
+      interval = setInterval(() => {
+        setTimer((prev) => +(prev + 0.1).toFixed(1));
+      }, 100);
+    }
+    return () => clearInterval(interval);
   }, [simState]);
 
   const steps = [
@@ -55,7 +47,7 @@ export function HeroSection() {
       key: "spike",
       num: "01",
       name: "DETECT",
-      label: simState === "spike" ? "Spike 14.5x" : "Nominal (0.010)",
+      label: simState === "nominal" ? "Nominal (0.010)" : "14.5x Anomaly Spike",
       isCurrent: simState === "spike",
       isPassed: ["analyzing", "policy", "rollback", "recovered"].includes(simState),
     },
@@ -63,7 +55,7 @@ export function HeroSection() {
       key: "analyzing",
       num: "02",
       name: "MEMORY",
-      label: simState === "analyzing" ? "Cosine match: 0.94" : "Vector index ready",
+      label: simState === "analyzing" ? "Matching RAG vectors" : "Vector index ready",
       isCurrent: simState === "analyzing",
       isPassed: ["policy", "rollback", "recovered"].includes(simState),
     },
@@ -71,7 +63,7 @@ export function HeroSection() {
       key: "policy",
       num: "03",
       name: "POLICY",
-      label: simState === "policy" ? "5/5 rules passed" : "Deterministic gates",
+      label: simState === "policy" ? "5/5 Gates evaluated" : "Deterministic gates",
       isCurrent: simState === "policy",
       isPassed: ["rollback", "recovered"].includes(simState),
     },
@@ -142,7 +134,7 @@ export function HeroSection() {
 
         {/* Right Column: Interactive Fleet Pipeline Simulation Card */}
         <div className="lg:col-span-6">
-          <Card className="border-2 border-border bg-card p-5 space-y-4 shadow-xl">
+          <Card className="border-2 border-border p-5 space-y-4 shadow-xl">
             {/* Terminal Top Bar */}
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
