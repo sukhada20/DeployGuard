@@ -18,7 +18,7 @@ export function FeatureBento() {
   const isSpike = spikeMultiplier > 1.25;
 
   return (
-    <section id="architecture" className="py-16 px-4 lg:px-6 border-b border-border bg-transparent">
+    <section id="architecture" className="py-16 px-4 lg:px-6 border-b border-border bg-background">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Section Header */}
         <div className="space-y-2 max-w-[65ch]">

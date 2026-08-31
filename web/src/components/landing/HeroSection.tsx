@@ -94,7 +94,7 @@ export function HeroSection() {
   ];
 
   return (
-    <section className="relative pt-12 pb-16 px-4 lg:px-6 border-b border-border bg-transparent overflow-hidden">
+    <section className="relative pt-12 pb-16 px-4 lg:px-6 border-b border-border bg-background overflow-hidden">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         {/* Left Column: Hero Copy */}
         <div className="lg:col-span-6 space-y-5">

@@ -33,7 +33,7 @@ export function SlaStatsSection() {
   ];
 
   return (
-    <section id="telemetry" className="py-16 px-4 lg:px-6 border-b border-border bg-transparent">
+    <section id="telemetry" className="py-16 px-4 lg:px-6 border-b border-border bg-background">
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="space-y-2 max-w-[65ch]">
           <h2 className="text-2xl sm:text-4xl font-mono font-bold uppercase tracking-tight text-foreground">

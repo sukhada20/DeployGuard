@@ -48,7 +48,7 @@ export default function DashboardPage() {
   const { events, isConnected } = useEventStream();
 
   return (
-    <div className="min-h-screen flex flex-col bg-transparent text-foreground">
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
       {/* 1. Header */}
       <Header overview={overview} isSseConnected={isConnected} />
 
