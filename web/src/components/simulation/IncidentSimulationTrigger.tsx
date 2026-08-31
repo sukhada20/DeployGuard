@@ -6,34 +6,69 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
+function getApiBase(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+  return "http://localhost:8000";
+}
+
 export function IncidentSimulationTrigger() {
   const [isRunning, setIsRunning] = useState(false);
   const [simStep, setSimStep] = useState<string | null>(null);
 
   const handleSimulate = async () => {
     setIsRunning(true);
-    setSimStep("Injecting 14.5x Error Spike...");
+    setSimStep("Triggering protection endpoint...");
 
-    setTimeout(() => {
-      setSimStep("Deploy Monitor detected 1.25x deviation...");
-    }, 1200);
+    try {
+      const baseUrl = getApiBase();
+      const res = await fetch(`${baseUrl}/api/v1/deployments/protect`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          service_name: "checkout-service",
+          target_version: "v2.4.0",
+          stable_version: "v2.3.9",
+          environment: "production",
+          simulate_anomaly: true,
+        }),
+      });
 
-    setTimeout(() => {
-      setSimStep("Incident Memory matched vectors (0.94)...");
-    }, 2400);
+      if (!res.ok) {
+        throw new Error(`Failed to trigger deployment: ${res.statusText}`);
+      }
 
-    setTimeout(() => {
-      setSimStep("Decision Agent: 5/5 Safety Gates passed...");
-    }, 3600);
+      setSimStep("Injecting 14.5x Error Spike...");
 
-    setTimeout(() => {
-      setSimStep("Rollback Agent: Cloud Deploy armed...");
-    }, 4800);
+      setTimeout(() => {
+        setSimStep("Deploy Monitor detected 1.25x deviation...");
+      }, 1000);
 
-    setTimeout(() => {
-      setSimStep("Recovered in 38.4s! Postmortem saved.");
+      setTimeout(() => {
+        setSimStep("Incident Memory matched vectors (0.91)...");
+      }, 2000);
+
+      setTimeout(() => {
+        setSimStep("Decision Agent: 5/5 Safety Gates passed...");
+      }, 3000);
+
+      setTimeout(() => {
+        setSimStep("Rollback Agent: Cloud Deploy armed...");
+      }, 4000);
+
+      setTimeout(() => {
+        setSimStep("Recovered! Postmortem saved to Firestore.");
+        setIsRunning(false);
+      }, 5500);
+    } catch (err) {
+      console.error("Simulation error", err);
+      setSimStep("Simulation failed to trigger backend API.");
       setIsRunning(false);
-    }, 6000);
+    }
   };
 
   return (

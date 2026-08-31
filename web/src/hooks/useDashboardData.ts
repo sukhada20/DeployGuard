@@ -10,10 +10,19 @@ import {
   AgentRegistryModel,
 } from "@/types/api";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+function getApiBase(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+  return "http://localhost:8000";
+}
 
 async function fetchJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`);
+  const baseUrl = getApiBase();
+  const res = await fetch(`${baseUrl}${path}`);
   if (!res.ok) {
     throw new Error(`Failed to fetch ${path}: ${res.statusText}`);
   }
