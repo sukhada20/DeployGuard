@@ -8,7 +8,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "border bg-card text-card-foreground",
+      "border bg-card/85 backdrop-blur-md text-card-foreground",
       variant === "brutalist" && "border-foreground/80 dark:border-border",
       variant === "muted" && "bg-muted/40 border-border",
       className
