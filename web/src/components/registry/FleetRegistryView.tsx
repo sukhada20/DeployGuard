@@ -1,18 +1,20 @@
 "use client";
 
 import React from "react";
-import { Shield, Brain, RotateCcw, FileText, Database, Lock, Key, ShieldCheck, Cpu } from "lucide-react";
-import { AgentRegistryModel } from "@/types/api";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
+  Shield,
+  Brain,
+  RotateCcw,
+  FileText,
+  Database,
+  Lock,
+  Key,
+  ShieldCheck,
+  Cpu,
+} from "lucide-react";
+import { AgentRegistryModel } from "@/types/api";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface FleetRegistryViewProps {
   agents?: AgentRegistryModel[];
@@ -23,76 +25,76 @@ const DEFAULT_AGENTS: AgentRegistryModel[] = [
     agent_id: "deploy-monitor-v1",
     name: "Deploy Monitor Agent",
     version: "1.0.0",
-    owner: "Platform Engineering",
-    domain: "Monitoring & Observability",
-    risk_level: "MEDIUM",
+    owner: "Platform SRE",
+    domain: "Monitoring & Telemetry",
+    risk_level: "LOW",
     service_account: "deploy-monitor-sa@deployguard-fleet.iam.gserviceaccount.com",
-    permissions: ["monitoring.read", "deployment.read", "logging.read"],
-    tools: ["get_metrics", "get_baseline", "compare_metrics"],
+    permissions: ["monitoring.viewer", "logging.viewer"],
+    tools: ["timeSeries.list", "entries.list"],
     status: "ACTIVE",
     created_at: "2026-08-29T10:00:00Z",
     last_heartbeat: "2026-08-30T13:45:00Z",
-    description: "Monitors post-deployment telemetry and baseline comparisons to detect metric anomalies.",
-  },
-  {
-    agent_id: "decision-v2",
-    name: "Decision Agent",
-    version: "2.0.0",
-    owner: "SRE",
-    domain: "Release Safety & Policy Evaluation",
-    risk_level: "HIGH",
-    service_account: "decision-agent-sa@deployguard-fleet.iam.gserviceaccount.com",
-    permissions: ["monitoring.read", "memory.read", "gemini.invoke"],
-    tools: ["gemini_reason", "model_armor_screen", "evaluate_policy"],
-    status: "ACTIVE",
-    created_at: "2026-08-29T10:00:00Z",
-    last_heartbeat: "2026-08-30T13:45:00Z",
-    description: "Synthesizes anomaly signals and historical incidents via Gemini LLM and deterministic safety policies.",
+    description: "Continuously polls 7 Google Cloud Monitoring metrics and logs at 1000ms intervals to compute anomaly standard deviation deltas.",
   },
   {
     agent_id: "incident-memory-v1",
     name: "Incident Memory Agent",
     version: "1.0.0",
-    owner: "Platform Engineering",
-    domain: "Incident Memory & Vector Storage",
-    risk_level: "MEDIUM",
+    owner: "Platform SRE",
+    domain: "Vector RAG & Memory",
+    risk_level: "LOW",
     service_account: "incident-memory-sa@deployguard-fleet.iam.gserviceaccount.com",
-    permissions: ["firestore.read", "firestore.write"],
-    tools: ["store_incident", "find_similar_incidents", "query_incidents"],
+    permissions: ["aiplatform.user", "datastore.viewer"],
+    tools: ["text-embedding-004", "firestore.vectorSearch"],
     status: "ACTIVE",
     created_at: "2026-08-29T10:00:00Z",
     last_heartbeat: "2026-08-30T13:45:00Z",
-    description: "Stores deployment events in Firestore and retrieves similar historical incidents.",
+    description: "Embeds live incident signatures and queries Firestore vector store with Cosine similarity thresholding to surface analogous historical resolutions.",
+  },
+  {
+    agent_id: "decision-v2",
+    name: "Decision Agent",
+    version: "2.0.0",
+    owner: "SRE Governance",
+    domain: "LLM Reasoning & 5-Gate Governance",
+    risk_level: "MEDIUM",
+    service_account: "decision-agent-sa@deployguard-fleet.iam.gserviceaccount.com",
+    permissions: ["aiplatform.user", "policy.evaluate"],
+    tools: ["gemini-1.5-pro", "model_armor_screen", "deterministic_policy_check"],
+    status: "ACTIVE",
+    created_at: "2026-08-29T10:00:00Z",
+    last_heartbeat: "2026-08-30T13:45:00Z",
+    description: "Evaluates incident root cause via Gemini 1.5 Pro reasoning, screened by Model Armor, and strictly enforced through 5 deterministic code gates.",
   },
   {
     agent_id: "rollback-v1",
     name: "Rollback Agent",
     version: "1.0.0",
-    owner: "SRE",
-    domain: "Cloud Deploy & Automated Recovery",
-    risk_level: "CRITICAL",
+    owner: "SRE Governance",
+    domain: "Cloud Deploy Execution",
+    risk_level: "HIGH",
     service_account: "rollback-agent-sa@deployguard-fleet.iam.gserviceaccount.com",
-    permissions: ["deployment.read", "deployment.rollback", "monitoring.read"],
-    tools: ["execute_rollback", "get_rollout_status"],
+    permissions: ["clouddeploy.releaser", "run.developer"],
+    tools: ["clouddeploy.rollouts.create", "run.services.update"],
     status: "ACTIVE",
     created_at: "2026-08-29T10:00:00Z",
     last_heartbeat: "2026-08-30T13:45:00Z",
-    description: "Executes approved rollbacks via Cloud Deploy after strict gateway policy authorization.",
+    description: "Dispatches atomic Cloud Deploy rollbacks to validated stable release targets. Verifies recovery probes across Cloud Run and GKE.",
   },
   {
     agent_id: "postmortem-v1",
     name: "Postmortem Agent",
     version: "1.0.0",
-    owner: "SRE",
-    domain: "Incident Reporting & SRE Synthesis",
+    owner: "SRE Governance",
+    domain: "SRE Reporting & Archival",
     risk_level: "LOW",
     service_account: "postmortem-agent-sa@deployguard-fleet.iam.gserviceaccount.com",
-    permissions: ["firestore.read", "firestore.write"],
-    tools: ["generate_postmortem", "export_markdown"],
+    permissions: ["aiplatform.user", "datastore.user"],
+    tools: ["gemini-1.5-flash", "markdown_export", "firestore.documents.create"],
     status: "ACTIVE",
     created_at: "2026-08-29T10:00:00Z",
     last_heartbeat: "2026-08-30T13:45:00Z",
-    description: "Generates auditable postmortem documents after incident resolution.",
+    description: "Synthesizes auditable Markdown postmortem reports with 5-Whys root cause analysis, telemetry deltas, and preventative action items upon incident resolution.",
   },
 ];
 
@@ -106,151 +108,118 @@ function getAgentIcon(agentId: string) {
   return Cpu;
 }
 
-function getRiskVariant(risk: string): "destructive" | "warning" | "info" | "success" {
+function getRiskBadge(risk: string) {
   const r = (risk || "LOW").toUpperCase();
-  if (r === "CRITICAL") return "destructive";
-  if (r === "HIGH") return "warning";
-  if (r === "MEDIUM") return "info";
-  return "success";
+  if (r === "HIGH" || r === "CRITICAL") {
+    return <Badge variant="destructive" className="text-xs font-mono font-bold">RISK: {r}</Badge>;
+  }
+  if (r === "MEDIUM") {
+    return <Badge variant="brutalist" className="text-xs font-mono font-bold">RISK: {r}</Badge>;
+  }
+  return <Badge variant="success" className="text-xs font-mono font-bold">RISK: {r}</Badge>;
 }
 
 export const FleetRegistryView: React.FC<FleetRegistryViewProps> = ({ agents }) => {
   const agentList = agents && agents.length > 0 ? agents : DEFAULT_AGENTS;
 
   return (
-    <div className="space-y-4">
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {agentList.map((agent) => {
+    <div className="space-y-5">
+      {/* Top Fleet Header Summary */}
+      <Card className="p-5 border-2 border-border bg-card/90 backdrop-blur-sm flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-mono font-bold uppercase text-foreground">
+              Autonomous Agent Fleet Registry
+            </h2>
+            <Badge variant="brutalist" className="text-xs font-mono font-bold">
+              5 AGENTS ONLINE
+            </Badge>
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground font-sans">
+            Every agent operates under least-privilege IAM service accounts, screened by Model Armor, and evaluated by deterministic safety gates.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 font-mono text-xs text-foreground shrink-0">
+          <div className="px-3 py-1.5 border-2 border-border bg-muted/30 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>TWO-TIER GATEWAY ENFORCED</span>
+          </div>
+        </div>
+      </Card>
+
+      {/* Clean 5-Agent Fleet Stack */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {agentList.map((agent, idx) => {
           const Icon = getAgentIcon(agent.agent_id);
           const tools = Array.isArray(agent.tools) && agent.tools.length > 0 ? agent.tools : [];
-          const permissions = Array.isArray(agent.permissions) && agent.permissions.length > 0 ? agent.permissions : [];
-          const serviceAccount = agent.service_account || `${agent.agent_id}-sa@deployguard-fleet.iam.gserviceaccount.com`;
+          const serviceAccount = agent.service_account || `${agent.agent_id}@gcp`;
           const status = (agent.status || "ACTIVE").toUpperCase();
 
           return (
             <Card
               key={agent.agent_id}
-              className="p-3.5 flex flex-col justify-between space-y-3 border-border hover:border-foreground/50 transition-colors"
+              className="p-5 border-2 border-border bg-card/90 backdrop-blur-sm hover:border-foreground/80 transition-all flex flex-col justify-between space-y-4 shadow-sm"
             >
-              <div>
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2">
-                    <Icon className="w-4 h-4 text-foreground shrink-0" />
+              <div className="space-y-3">
+                {/* Agent Header */}
+                <div className="flex items-start justify-between gap-2 border-b border-border pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <Icon className="w-5 h-5 text-foreground shrink-0" />
                     <div>
-                      <h4 className="font-bold text-xs text-foreground font-mono leading-tight">{agent.name}</h4>
-                      <span className="text-[10px] text-muted-foreground font-mono">
-                        v{agent.version || "1.0.0"} · {agent.owner || "DeployGuard"}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-xs text-muted-foreground font-bold">0{idx + 1}.</span>
+                        <h3 className="font-mono font-bold text-sm text-foreground uppercase tracking-tight">
+                          {agent.name}
+                        </h3>
+                      </div>
+                      <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                        {agent.domain}
+                      </p>
                     </div>
                   </div>
+
                   <div className="flex flex-col items-end gap-1">
-                    <Badge variant={getRiskVariant(agent.risk_level)} className="text-[9px] px-1.5 py-0">
-                      RISK: {agent.risk_level}
-                    </Badge>
-                    <div className="flex items-center gap-1 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                      <span className="w-1.5 h-1.5 bg-emerald-500" />
+                    {getRiskBadge(agent.risk_level)}
+                    <div className="flex items-center gap-1 text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       <span>{status}</span>
                     </div>
                   </div>
                 </div>
 
-                <p className="text-xs text-foreground/80 font-sans leading-relaxed">
-                  {agent.description || agent.domain}
+                {/* Description */}
+                <p className="text-xs sm:text-sm text-foreground/90 font-sans leading-relaxed">
+                  {agent.description}
                 </p>
               </div>
 
-              <div className="space-y-1 text-xs font-mono text-muted-foreground pt-2.5 border-t border-border/60">
-                <div className="flex items-center gap-1.5 text-[10px]">
-                  <Key className="w-3 h-3 text-foreground shrink-0" />
-                  <span className="truncate text-foreground/90">{serviceAccount}</span>
-                </div>
-                <div className="flex items-start gap-1.5 text-[10px]">
-                  <Lock className="w-3 h-3 text-foreground shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">
-                    <strong className="text-foreground">Tools:</strong> {tools.length > 0 ? tools.join(", ") : "Standard ADK"}
-                  </span>
-                </div>
-                {permissions.length > 0 && (
-                  <div className="flex items-start gap-1.5 text-[10px]">
-                    <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                    <span className="text-muted-foreground">
-                      <strong className="text-foreground">IAM:</strong> {permissions.join(", ")}
-                    </span>
+              {/* IAM & Tools Metadata */}
+              <div className="space-y-2 pt-3 border-t border-border font-mono text-xs">
+                <div className="p-2.5 bg-muted/30 border border-border space-y-1">
+                  <div className="flex items-center gap-1.5 text-muted-foreground font-bold uppercase text-[11px]">
+                    <Key className="w-3.5 h-3.5 text-foreground shrink-0" />
+                    <span>Service Account:</span>
                   </div>
-                )}
+                  <div className="text-foreground font-bold text-xs truncate" title={serviceAccount}>
+                    {serviceAccount}
+                  </div>
+                </div>
+
+                <div className="p-2.5 bg-muted/30 border border-border space-y-1">
+                  <div className="flex items-center gap-1.5 text-muted-foreground font-bold uppercase text-[11px]">
+                    <Lock className="w-3.5 h-3.5 text-foreground shrink-0" />
+                    <span>Permitted Tools:</span>
+                  </div>
+                  <div className="text-foreground font-semibold text-xs truncate">
+                    {tools.join(", ")}
+                  </div>
+                </div>
               </div>
             </Card>
           );
         })}
       </div>
-
-      {/* IAM Capability Matrix */}
-      <Card className="border-border space-y-3 p-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
-            GCP IAM & Agent Gateway Capability Matrix
-          </h3>
-          <Badge variant="brutalist" className="text-[10px]">
-            ENFORCED BY TWO-TIER GATEWAY
-          </Badge>
-        </div>
-
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Agent Role</TableHead>
-              <TableHead>GCP Service Account</TableHead>
-              <TableHead>Cloud Monitoring</TableHead>
-              <TableHead>Cloud Deploy</TableHead>
-              <TableHead>Vertex AI</TableHead>
-              <TableHead>Firestore</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell className="font-bold text-foreground">Deploy Monitor</TableCell>
-              <TableCell className="text-muted-foreground">deploy-monitor-sa</TableCell>
-              <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">READ</TableCell>
-              <TableCell className="text-muted-foreground">NONE</TableCell>
-              <TableCell className="text-muted-foreground">NONE</TableCell>
-              <TableCell className="text-muted-foreground">NONE</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="font-bold text-foreground">Decision Agent</TableCell>
-              <TableCell className="text-muted-foreground">decision-agent-sa</TableCell>
-              <TableCell className="text-muted-foreground">NONE</TableCell>
-              <TableCell className="text-muted-foreground">NONE</TableCell>
-              <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">INFER</TableCell>
-              <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">READ</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="font-bold text-foreground">Incident Memory</TableCell>
-              <TableCell className="text-muted-foreground">incident-memory-sa</TableCell>
-              <TableCell className="text-muted-foreground">NONE</TableCell>
-              <TableCell className="text-muted-foreground">NONE</TableCell>
-              <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">EMBED</TableCell>
-              <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">READ/WRITE</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="font-bold text-foreground">Rollback Agent</TableCell>
-              <TableCell className="text-muted-foreground">rollback-agent-sa</TableCell>
-              <TableCell className="text-muted-foreground">NONE</TableCell>
-              <TableCell className="text-rose-600 dark:text-rose-400 font-bold">EXECUTE</TableCell>
-              <TableCell className="text-muted-foreground">NONE</TableCell>
-              <TableCell className="text-muted-foreground">NONE</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="font-bold text-foreground">Postmortem Agent</TableCell>
-              <TableCell className="text-muted-foreground">postmortem-agent-sa</TableCell>
-              <TableCell className="text-muted-foreground">NONE</TableCell>
-              <TableCell className="text-muted-foreground">NONE</TableCell>
-              <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">INFER</TableCell>
-              <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">READ/WRITE</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </Card>
     </div>
   );
 };

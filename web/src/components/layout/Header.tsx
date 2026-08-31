@@ -18,22 +18,22 @@ export const Header: React.FC<HeaderProps> = ({ overview, isSseConnected }) => {
   const dep = overview?.active_deployment;
 
   return (
-    <header className="border-b border-border bg-background sticky top-0 z-40 px-4 lg:px-6 py-2.5">
+    <header className="border-b border-border bg-background/85 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-8 py-3">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-        {/* Brand without wrapping div around icon */}
-        <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
-          <Link href="/" className="flex items-center gap-2 group">
-            <ShieldCheck className="w-5 h-5 text-foreground transition-transform group-hover:scale-105" />
+        {/* Brand */}
+        <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <ShieldCheck className="w-6 h-6 text-foreground transition-transform group-hover:scale-105" />
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono font-bold text-sm tracking-tight text-foreground uppercase">
+                <span className="font-mono font-black text-base tracking-tight text-foreground uppercase">
                   DeployGuard
                 </span>
-                <Badge variant="brutalist" className="text-[9px] px-1.5 py-0 hidden sm:inline-flex">
+                <Badge variant="brutalist" className="text-[10px] px-1.5 py-0.5 hidden sm:inline-flex font-mono font-bold">
                   CONSOLE
                 </Badge>
               </div>
-              <p className="text-[11px] text-muted-foreground font-mono">
+              <p className="text-xs text-muted-foreground font-mono">
                 Autonomous SRE Governance Cockpit
               </p>
             </div>
@@ -44,10 +44,10 @@ export const Header: React.FC<HeaderProps> = ({ overview, isSseConnected }) => {
             variant="outline"
             size="sm"
             asChild
-            className="h-7 text-[11px] font-mono gap-1 border-border hover:border-foreground"
+            className="h-8 text-xs font-mono font-bold gap-1.5 border-border hover:border-foreground"
           >
             <Link href="/">
-              <Home className="w-3 h-3" />
+              <Home className="w-3.5 h-3.5" />
               <span>Overview</span>
             </Link>
           </Button>
@@ -59,9 +59,9 @@ export const Header: React.FC<HeaderProps> = ({ overview, isSseConnected }) => {
         </div>
 
         {/* Center: Active Pipeline Strip */}
-        <div className="flex items-center gap-2.5 bg-muted/40 border border-border px-3 py-1 text-xs font-mono w-full md:w-auto justify-center">
+        <div className="flex items-center gap-3 bg-muted/40 border-2 border-border px-3.5 py-1.5 text-xs font-mono w-full md:w-auto justify-center shadow-sm">
           <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Server className="w-3.5 h-3.5 text-foreground" />
+            <Server className="w-4 h-4 text-foreground" />
             <span className="text-foreground font-bold">{dep?.service_name || "checkout-service"}</span>
           </div>
           <span className="text-border">|</span>
@@ -72,11 +72,11 @@ export const Header: React.FC<HeaderProps> = ({ overview, isSseConnected }) => {
           </div>
           <span className="text-border">|</span>
           <div className="flex items-center gap-1.5">
-            <span className="text-muted-foreground text-[11px]">STATUS:</span>
+            <span className="text-muted-foreground text-xs font-bold">STATUS:</span>
             <span
               className={`uppercase font-bold ${
                 isIncident
-                  ? "text-rose-600 dark:text-rose-400 animate-pulse"
+                  ? "text-rose-600 dark:text-rose-400 animate-pulse font-black"
                   : "text-emerald-600 dark:text-emerald-400"
               }`}
             >
@@ -86,22 +86,22 @@ export const Header: React.FC<HeaderProps> = ({ overview, isSseConnected }) => {
         </div>
 
         {/* Right: Health Badge, SSE indicator & Theme Toggle */}
-        <div className="hidden md:flex items-center gap-2.5">
+        <div className="hidden md:flex items-center gap-3">
           {/* Status Badge */}
           {isIncident ? (
-            <Badge variant="destructive" className="h-7 px-2.5 gap-1.5 font-bold">
-              <ShieldAlert className="w-3.5 h-3.5" />
+            <Badge variant="destructive" className="h-8 px-3 gap-1.5 font-bold font-mono text-xs">
+              <ShieldAlert className="w-4 h-4" />
               <span>INCIDENT ACTIVE</span>
             </Badge>
           ) : (
-            <Badge variant="success" className="h-7 px-2.5 gap-1.5 font-bold">
-              <ShieldCheck className="w-3.5 h-3.5" />
+            <Badge variant="success" className="h-8 px-3 gap-1.5 font-bold font-mono text-xs">
+              <ShieldCheck className="w-4 h-4" />
               <span>FLEET ARMORED</span>
             </Badge>
           )}
 
           {/* Live SSE Stream */}
-          <div className="flex items-center gap-1.5 px-2.5 h-7 border border-border bg-muted/40 text-[11px] font-mono text-foreground font-medium">
+          <div className="flex items-center gap-2 px-3 h-8 border-2 border-border bg-muted/40 text-xs font-mono text-foreground font-bold">
             <span
               className={`w-2 h-2 rounded-full ${
                 isSseConnected ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground"

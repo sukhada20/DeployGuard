@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, Zap, Gauge } from "lucide-react";
+import { AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, Gauge } from "lucide-react";
 import anime from "animejs";
 import { TelemetryMetrics, MetricDetail } from "@/types/api";
 import { Badge } from "@/components/ui/badge";
@@ -31,38 +31,38 @@ const MetricCardItem: React.FC<{ detail: MetricDetail }> = ({ detail }) => {
 
   return (
     <Card
-      className={`p-3.5 flex flex-col justify-between transition-colors ${
+      className={`p-4 sm:p-5 flex flex-col justify-between space-y-3 transition-colors border-2 ${
         detail.is_anomaly
-          ? "border-rose-500/80 bg-rose-500/[0.04] dark:border-rose-500/80 dark:bg-rose-950/20"
-          : "border-border hover:border-foreground/40 bg-card"
+          ? "border-rose-500 bg-rose-500/[0.05] dark:border-rose-500 dark:bg-rose-950/20"
+          : "border-border hover:border-foreground/60 bg-card/90 backdrop-blur-sm"
       }`}
     >
       {/* Top row: Name & Alert Badge */}
-      <div className="flex items-center justify-between gap-2 mb-1.5">
-        <span className="text-[11px] font-mono font-medium text-muted-foreground uppercase tracking-tight truncate">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs sm:text-sm font-mono font-bold text-muted-foreground uppercase tracking-tight truncate">
           {detail.name}
         </span>
         {detail.is_anomaly ? (
-          <Badge variant="destructive" className="h-5 px-1.5 text-[9px]">
-            <AlertTriangle className="w-2.5 h-2.5 mr-0.5" />
+          <Badge variant="destructive" className="h-5 px-2 text-[10px] font-mono font-bold">
+            <AlertTriangle className="w-3 h-3 mr-1" />
             SPIKE
           </Badge>
         ) : (
-          <Badge variant="success" className="h-5 px-1.5 text-[9px]">
-            <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" />
+          <Badge variant="success" className="h-5 px-2 text-[10px] font-mono font-bold">
+            <CheckCircle2 className="w-3 h-3 mr-1" />
             NOMINAL
           </Badge>
         )}
       </div>
 
       {/* Main value & Delta */}
-      <div className="flex items-baseline justify-between gap-2 mb-1.5">
-        <div className="text-2xl font-bold font-mono text-foreground tracking-tight">
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="text-2xl sm:text-3xl font-black font-mono text-foreground tracking-tight">
           <span ref={numRef}>{detail.current}</span>
-          <span className="text-xs font-normal text-muted-foreground ml-1">{detail.unit}</span>
+          <span className="text-sm font-normal text-muted-foreground ml-1">{detail.unit}</span>
         </div>
         <div
-          className={`flex items-center gap-0.5 text-xs font-mono font-bold ${
+          className={`flex items-center gap-1 text-xs sm:text-sm font-mono font-bold ${
             detail.is_anomaly
               ? "text-rose-600 dark:text-rose-400"
               : detail.delta_pct === 0
@@ -70,18 +70,20 @@ const MetricCardItem: React.FC<{ detail: MetricDetail }> = ({ detail }) => {
               : "text-emerald-600 dark:text-emerald-400"
           }`}
         >
-          {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+          {isUp ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
           <span>{detail.delta_pct > 0 ? `+${detail.delta_pct}%` : `${detail.delta_pct}%`}</span>
         </div>
       </div>
 
       {/* Baseline Reference */}
-      <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground mb-1">
-        <span>BASELINE: {detail.baseline} {detail.unit}</span>
+      <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
+        <span>BASELINE: <strong className="text-foreground">{detail.baseline} {detail.unit}</strong></span>
       </div>
 
       {/* Sparkline Graph */}
-      <SparklineChart data={detail.history || [detail.baseline, detail.current]} isAnomaly={detail.is_anomaly} />
+      <div className="pt-1">
+        <SparklineChart data={detail.history || [detail.baseline, detail.current]} isAnomaly={detail.is_anomaly} />
+      </div>
     </Card>
   );
 };
@@ -89,7 +91,7 @@ const MetricCardItem: React.FC<{ detail: MetricDetail }> = ({ detail }) => {
 export const MetricCards: React.FC<MetricCardsProps> = ({ telemetry }) => {
   if (!telemetry?.metrics) {
     return (
-      <div className="p-8 text-center text-muted-foreground font-mono text-xs border border-dashed border-border">
+      <div className="p-8 text-center text-muted-foreground font-mono text-xs border-2 border-dashed border-border bg-card/60">
         [INITIALIZING TELEMETRY STREAMS: SAMPLING 1000MS]
       </div>
     );
@@ -98,16 +100,16 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ telemetry }) => {
   const metrics = telemetry.metrics;
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 font-mono">
-          <Gauge className="w-3.5 h-3.5 text-foreground" />
+        <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 font-mono">
+          <Gauge className="w-4 h-4 text-foreground" />
           7-Dimension Telemetry Matrix
         </h2>
-        <span className="text-[10px] text-muted-foreground font-mono">SAMPLING: 1000MS · BASELINE COMPARISON</span>
+        <span className="text-xs text-muted-foreground font-mono">SAMPLING: 1000MS · BASELINE COMPARISON</span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         <MetricCardItem detail={metrics.error_rate} />
         <MetricCardItem detail={metrics.latency_p95} />
         <MetricCardItem detail={metrics.cpu_utilization} />

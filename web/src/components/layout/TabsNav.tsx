@@ -19,21 +19,21 @@ export const TabsNav: React.FC<TabsNavProps> = ({ activeTab, onTabChange }) => {
   ];
 
   return (
-    <div className="border-b border-border bg-card/60 px-4 lg:px-6">
-      <div className="max-w-7xl mx-auto flex items-center gap-1.5 overflow-x-auto py-2">
+    <div className="border-b border-border bg-background/60 backdrop-blur-md px-4 lg:px-8">
+      <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto py-2.5">
         {tabs.map(({ key, label, icon: Icon }) => {
           const isActive = activeTab === key;
           return (
             <button
               key={key}
               onClick={() => onTabChange(key)}
-              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-mono transition-all select-none border whitespace-nowrap ${
+              className={`flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-mono transition-all select-none border-2 whitespace-nowrap ${
                 isActive
-                  ? "border-foreground bg-foreground text-background font-bold shadow-none"
-                  : "border-border/60 bg-muted/20 text-foreground/90 hover:text-foreground hover:border-foreground hover:bg-muted/50 font-medium"
+                  ? "border-foreground bg-foreground text-background font-bold shadow-sm"
+                  : "border-border/80 bg-card/60 text-foreground/80 hover:text-foreground hover:border-foreground hover:bg-card font-medium"
               }`}
             >
-              <Icon className="w-3.5 h-3.5" />
+              <Icon className="w-4 h-4" />
               <span>{label}</span>
             </button>
           );
