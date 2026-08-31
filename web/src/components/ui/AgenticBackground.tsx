@@ -286,34 +286,40 @@ export function AgenticBackground() {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none" aria-hidden="true">
-      {/* 1. Engineering Coordinate Grid with clear visibility on black bg */}
+      {/* 1. Engineering Coordinate Grid: appears only on left and right edges with smooth fade-in */}
       <div
-        className="absolute inset-0 opacity-[0.14] dark:opacity-[0.18]"
+        className="absolute inset-0 transition-opacity duration-1000 ease-out"
         style={{
+          opacity: mounted ? 0.22 : 0,
           backgroundImage: `
             linear-gradient(to right, currentColor 1px, transparent 1px),
             linear-gradient(to bottom, currentColor 1px, transparent 1px)
           `,
           backgroundSize: "64px 64px",
+          maskImage: "linear-gradient(to right, black 0%, black 14%, transparent 34%, transparent 66%, black 86%, black 100%)",
+          WebkitMaskImage: "linear-gradient(to right, black 0%, black 14%, transparent 34%, transparent 66%, black 86%, black 100%)",
         }}
       />
 
-      {/* 2. Micro Coordinate Dots */}
+      {/* 2. Micro Coordinate Dots: left and right edges with smooth fade-in */}
       <div
-        className="absolute inset-0 opacity-[0.22] dark:opacity-[0.28]"
+        className="absolute inset-0 transition-opacity duration-1000 ease-out"
         style={{
+          opacity: mounted ? 0.32 : 0,
           backgroundImage: `radial-gradient(circle, currentColor 1.5px, transparent 1.5px)`,
           backgroundSize: "32px 32px",
+          maskImage: "linear-gradient(to right, black 0%, black 12%, transparent 30%, transparent 70%, black 88%, black 100%)",
+          WebkitMaskImage: "linear-gradient(to right, black 0%, black 12%, transparent 30%, transparent 70%, black 88%, black 100%)",
         }}
       />
 
-      {/* 3. Ambient Lighting Glow */}
+      {/* 3. Ambient Lighting Glow Orbs */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-foreground/[0.045] rounded-full blur-[140px] pointer-events-none" />
 
       {/* 4. Canvas Node Layer */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
 
-      {/* 5. Peripheral HUD Coordinates */}
+      {/* 5. Peripheral HUD Coordinates on left and right borders */}
       <div className="absolute top-3 left-4 font-mono text-[9px] text-muted-foreground/80 tracking-wider hidden md:block">
         + 0x00_ROOT · AUTONOMOUS_GOVERNANCE_ACTIVE
       </div>
