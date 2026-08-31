@@ -286,50 +286,26 @@ export function AgenticBackground() {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none" aria-hidden="true">
-      {/* 1. Engineering Coordinate Grid: ultra-soft feathered fade from left and right edges */}
+      {/* 1. Engineering Coordinate Grid: increased fade with softer edge diffusion */}
       <div
         className="absolute inset-0 transition-opacity duration-1500 ease-out"
         style={{
-          opacity: mounted ? 0.20 : 0,
+          opacity: mounted ? 0.18 : 0,
           backgroundImage: `
             linear-gradient(to right, currentColor 1px, transparent 1px),
             linear-gradient(to bottom, currentColor 1px, transparent 1px)
           `,
           backgroundSize: "64px 64px",
-          maskImage: "linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 6%, rgba(0,0,0,0.2) 14%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 78%, rgba(0,0,0,0.2) 86%, rgba(0,0,0,0.6) 94%, rgba(0,0,0,1) 100%)",
-          WebkitMaskImage: "linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 6%, rgba(0,0,0,0.2) 14%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 78%, rgba(0,0,0,0.2) 86%, rgba(0,0,0,0.6) 94%, rgba(0,0,0,1) 100%)",
+          maskImage: "linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 3%, rgba(0,0,0,0.1) 8%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(0,0,0,0.1) 92%, rgba(0,0,0,0.4) 97%, rgba(0,0,0,1) 100%)",
+          WebkitMaskImage: "linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 3%, rgba(0,0,0,0.1) 8%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(0,0,0,0.1) 92%, rgba(0,0,0,0.4) 97%, rgba(0,0,0,1) 100%)",
         }}
       />
 
-      {/* 2. Micro Coordinate Dots: soft feathered fade on left and right edges */}
-      <div
-        className="absolute inset-0 transition-opacity duration-1500 ease-out"
-        style={{
-          opacity: mounted ? 0.28 : 0,
-          backgroundImage: `radial-gradient(circle, currentColor 1.5px, transparent 1.5px)`,
-          backgroundSize: "32px 32px",
-        }}
-      />
-
-      {/* 3. Ambient Lighting Glow Orbs */}
+      {/* 2. Ambient Lighting Glow Orbs */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-foreground/[0.045] rounded-full blur-[140px] pointer-events-none" />
 
-      {/* 4. Canvas Node Layer */}
+      {/* 3. Canvas Node Layer */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
-
-      {/* 5. Peripheral HUD Coordinates on left and right borders */}
-      <div className="absolute top-3 left-4 font-mono text-[9px] text-muted-foreground/80 tracking-wider hidden md:block">
-        + 0x00_ROOT · AUTONOMOUS_GOVERNANCE_ACTIVE
-      </div>
-      <div className="absolute top-3 right-4 font-mono text-[9px] text-muted-foreground/80 tracking-wider hidden md:block">
-        OTEL_SPAN_STREAM · 1000MS_SAMPLING +
-      </div>
-      <div className="absolute bottom-3 left-4 font-mono text-[9px] text-muted-foreground/80 tracking-wider hidden md:block">
-        + GKE_CLOUD_DEPLOY · TWO_TIER_GATEWAY
-      </div>
-      <div className="absolute bottom-3 right-4 font-mono text-[9px] text-muted-foreground/80 tracking-wider hidden md:block">
-        VERTEX_EMBED_004 · 5_OF_5_SAFE_VERIFIED +
-      </div>
     </div>
   );
 }
