@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AgentRegistryEntry(BaseModel):
@@ -15,8 +15,12 @@ class AgentRegistryEntry(BaseModel):
     owner: str  # Owning team: "SRE"
     domain: str  # Operational domain: "Deployment"
     risk_level: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
-    permissions: list[str]  # ["deployment.read", "deployment.rollback"]
-    status: Literal["ACTIVE", "INACTIVE", "DEPRECATED"]
+    service_account: str = ""  # e.g., "rollback-agent-sa@deployguard-fleet.iam.gserviceaccount.com"
+    permissions: list[str] = Field(default_factory=list)  # ["deployment.read", "deployment.rollback"]
+    tools: list[str] = Field(default_factory=list)  # ["execute_rollback", "get_rollout_status"]
+    status: Literal["ACTIVE", "INACTIVE", "DEPRECATED", "active", "inactive", "deprecated"] = "ACTIVE"
     approved_at: datetime | None = None
     last_active: datetime | None = None
+    last_heartbeat: datetime | None = None
+    created_at: datetime | None = None
     description: str = ""

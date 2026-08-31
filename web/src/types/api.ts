@@ -114,13 +114,16 @@ export interface AgentRegistryModel {
   version: string;
   owner: string;
   domain: string;
-  risk_level: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
-  service_account: string;
-  permissions: string[];
-  tools: string[];
-  status: "active" | "inactive" | "deprecated";
-  created_at: string;
-  last_heartbeat: string;
+  risk_level: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | string;
+  service_account?: string;
+  permissions?: string[];
+  tools?: string[];
+  status?: string;
+  created_at?: string | null;
+  last_heartbeat?: string | null;
+  last_active?: string | null;
+  approved_at?: string | null;
+  description?: string;
 }
 
 export interface AgentEventMessage {
