@@ -87,20 +87,20 @@ export function AgenticBackground() {
       "postmortem:generator_ready",
     ];
 
-    // Initialize 32 to 48 Agent Nodes
-    const nodeCount = Math.max(30, Math.min(50, Math.floor((width * height) / 22000)));
+    // Initialize 36 to 52 Agent Nodes
+    const nodeCount = Math.max(32, Math.min(52, Math.floor((width * height) / 20000)));
     const nodes: Node[] = Array.from({ length: nodeCount }, (_, i) => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.45,
-      vy: (Math.random() - 0.5) * 0.45,
-      size: Math.random() > 0.55 ? 5 : 3.5,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      size: Math.random() > 0.5 ? 5.5 : 4,
       pulse: Math.random() * Math.PI * 2,
       label: i < LABELS.length ? LABELS[i] : undefined,
     }));
 
     const packets: Packet[] = [];
-    const maxPackets = 16;
+    const maxPackets = 18;
     let time = 0;
     let scanY = 0;
 
@@ -119,23 +119,23 @@ export function AgenticBackground() {
         mouse.y += (mouse.targetY - mouse.y) * 0.08;
       }
 
-      // 1. Moving Telemetry Scanline
-      scanY = (scanY + 0.8) % height;
-      const scanGrad = ctx.createLinearGradient(0, scanY - 24, 0, scanY + 24);
+      // 1. Moving Telemetry Radar Beam
+      scanY = (scanY + 0.9) % height;
+      const scanGrad = ctx.createLinearGradient(0, scanY - 30, 0, scanY + 30);
       scanGrad.addColorStop(0, "transparent");
-      scanGrad.addColorStop(0.5, isDark ? "rgba(255, 255, 255, 0.065)" : "rgba(0, 0, 0, 0.045)");
+      scanGrad.addColorStop(0.5, isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)");
       scanGrad.addColorStop(1, "transparent");
       ctx.fillStyle = scanGrad;
-      ctx.fillRect(0, scanY - 24, width, 48);
+      ctx.fillRect(0, scanY - 30, width, 60);
 
       // 2. Cursor Ambient Spotlight
       if (mouse.active && mouse.x > 0 && mouse.y > 0) {
-        const spotGrad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 280);
-        spotGrad.addColorStop(0, isDark ? "rgba(255, 255, 255, 0.09)" : "rgba(0, 0, 0, 0.06)");
+        const spotGrad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 320);
+        spotGrad.addColorStop(0, isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.08)");
         spotGrad.addColorStop(1, "transparent");
         ctx.fillStyle = spotGrad;
         ctx.beginPath();
-        ctx.arc(mouse.x, mouse.y, 280, 0, Math.PI * 2);
+        ctx.arc(mouse.x, mouse.y, 320, 0, Math.PI * 2);
         ctx.fill();
       }
 
@@ -144,9 +144,9 @@ export function AgenticBackground() {
         const n = nodes[i];
         n.pulse += 0.035;
 
-        // Smooth sinusoidal drift
-        n.x += n.vx + Math.sin(time + n.pulse) * 0.22;
-        n.y += n.vy + Math.cos(time + n.pulse) * 0.22;
+        // Sinusoidal organic drift
+        n.x += n.vx + Math.sin(time + n.pulse) * 0.25;
+        n.y += n.vy + Math.cos(time + n.pulse) * 0.25;
 
         // Boundary wrap
         if (n.x < -20) n.x = width + 20;
@@ -161,8 +161,8 @@ export function AgenticBackground() {
           const dy = n.y - mouse.y;
           mouseDist = Math.sqrt(dx * dx + dy * dy);
         }
-        const isNearCursor = mouseDist < 180;
-        const prox = isNearCursor ? 1 - mouseDist / 180 : 0;
+        const isNearCursor = mouseDist < 200;
+        const prox = isNearCursor ? 1 - mouseDist / 200 : 0;
 
         // Inter-node Connection Lines
         for (let j = i + 1; j < nodes.length; j++) {
@@ -171,8 +171,8 @@ export function AgenticBackground() {
           const dy = n.y - n2.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < 160) {
-            const alpha = (1 - dist / 160) * (isDark ? 0.22 : 0.16) + (prox * 0.18);
+          if (dist < 170) {
+            const alpha = (1 - dist / 170) * (isDark ? 0.35 : 0.25) + (prox * 0.25);
             ctx.strokeStyle = isDark
               ? `rgba(255, 255, 255, ${alpha})`
               : `rgba(0, 0, 0, ${alpha})`;
@@ -183,30 +183,30 @@ export function AgenticBackground() {
             ctx.stroke();
 
             // Spawn data packet
-            if (packets.length < maxPackets && Math.random() < 0.004) {
+            if (packets.length < maxPackets && Math.random() < 0.006) {
               packets.push({
                 fromIndex: i,
                 toIndex: j,
                 progress: 0,
-                speed: 0.007 + Math.random() * 0.01,
+                speed: 0.008 + Math.random() * 0.012,
               });
             }
           }
         }
 
         // Draw Node Square / Diamond
-        const nodeSize = n.size + prox * 2.5;
-        const nodeAlpha = isDark ? 0.7 + prox * 0.3 : 0.6 + prox * 0.35;
+        const nodeSize = n.size + prox * 3;
+        const nodeAlpha = isDark ? 0.85 + prox * 0.15 : 0.75 + prox * 0.2;
         ctx.fillStyle = isDark
           ? `rgba(255, 255, 255, ${nodeAlpha})`
           : `rgba(0, 0, 0, ${nodeAlpha})`;
         ctx.fillRect(n.x - nodeSize / 2, n.y - nodeSize / 2, nodeSize, nodeSize);
 
         // Pulse ring around node
-        const ringRadius = nodeSize * 2.0 + Math.sin(n.pulse) * 3.5;
+        const ringRadius = nodeSize * 2.2 + Math.sin(n.pulse) * 4;
         ctx.strokeStyle = isDark
-          ? `rgba(255, 255, 255, ${0.16 + prox * 0.25})`
-          : `rgba(0, 0, 0, ${0.12 + prox * 0.2})`;
+          ? `rgba(255, 255, 255, ${0.25 + prox * 0.3})`
+          : `rgba(0, 0, 0, ${0.2 + prox * 0.25})`;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.arc(n.x, n.y, ringRadius, 0, Math.PI * 2);
@@ -215,11 +215,11 @@ export function AgenticBackground() {
         // Monospace Telemetry Label
         if (n.label) {
           ctx.font = "bold 9px ui-monospace, SFMono-Regular, Menlo, monospace";
-          const labelAlpha = isDark ? 0.45 + prox * 0.45 : 0.45 + prox * 0.45;
+          const labelAlpha = isDark ? 0.65 + prox * 0.35 : 0.6 + prox * 0.35;
           ctx.fillStyle = isDark
             ? `rgba(255, 255, 255, ${labelAlpha})`
             : `rgba(0, 0, 0, ${labelAlpha})`;
-          ctx.fillText(`[${n.label}]`, n.x + 9, n.y + 3);
+          ctx.fillText(`[${n.label}]`, n.x + 10, n.y + 3);
         }
       }
 
@@ -239,15 +239,15 @@ export function AgenticBackground() {
         const currX = src.x + (tgt.x - src.x) * pkt.progress;
         const currY = src.y + (tgt.y - src.y) * pkt.progress;
 
-        ctx.fillStyle = isDark ? "rgba(255, 255, 255, 0.95)" : "rgba(0, 0, 0, 0.9)";
-        ctx.fillRect(currX - 2.5, currY - 2.5, 5, 5);
+        ctx.fillStyle = isDark ? "rgba(255, 255, 255, 1.0)" : "rgba(0, 0, 0, 0.95)";
+        ctx.fillRect(currX - 3, currY - 3, 6, 6);
 
         // Glowing packet trail
-        const trailProg = Math.max(0, pkt.progress - 0.09);
+        const trailProg = Math.max(0, pkt.progress - 0.1);
         const trailX = src.x + (tgt.x - src.x) * trailProg;
         const trailY = src.y + (tgt.y - src.y) * trailProg;
 
-        ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.45)" : "rgba(0, 0, 0, 0.35)";
+        ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.6)" : "rgba(0, 0, 0, 0.5)";
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(trailX, trailY);
@@ -257,19 +257,19 @@ export function AgenticBackground() {
 
       // 5. Cursor Crosshair & Coordinate Readout
       if (mouse.active && mouse.x > 0 && mouse.y > 0) {
-        ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.25)";
+        ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.35)" : "rgba(0, 0, 0, 0.35)";
         ctx.lineWidth = 1;
 
         ctx.beginPath();
-        ctx.moveTo(mouse.x - 14, mouse.y);
-        ctx.lineTo(mouse.x + 14, mouse.y);
-        ctx.moveTo(mouse.x, mouse.y - 14);
-        ctx.lineTo(mouse.x, mouse.y + 14);
+        ctx.moveTo(mouse.x - 16, mouse.y);
+        ctx.lineTo(mouse.x + 16, mouse.y);
+        ctx.moveTo(mouse.x, mouse.y - 16);
+        ctx.lineTo(mouse.x, mouse.y + 16);
         ctx.stroke();
 
         ctx.font = "8px ui-monospace, SFMono-Regular, Menlo, monospace";
-        ctx.fillStyle = isDark ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)";
-        ctx.fillText(`LOC:[${Math.round(mouse.x)},${Math.round(mouse.y)}]`, mouse.x + 10, mouse.y - 8);
+        ctx.fillStyle = isDark ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0.7)";
+        ctx.fillText(`LOC:[${Math.round(mouse.x)},${Math.round(mouse.y)}]`, mouse.x + 12, mouse.y - 8);
       }
 
       animId = requestAnimationFrame(loop);
@@ -286,9 +286,9 @@ export function AgenticBackground() {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none" aria-hidden="true">
-      {/* 1. Engineering Coordinate Grid */}
+      {/* 1. Engineering Coordinate Grid with clear visibility on black bg */}
       <div
-        className="absolute inset-0 opacity-[0.08] dark:opacity-[0.12]"
+        className="absolute inset-0 opacity-[0.14] dark:opacity-[0.18]"
         style={{
           backgroundImage: `
             linear-gradient(to right, currentColor 1px, transparent 1px),
@@ -300,7 +300,7 @@ export function AgenticBackground() {
 
       {/* 2. Micro Coordinate Dots */}
       <div
-        className="absolute inset-0 opacity-[0.16] dark:opacity-[0.22]"
+        className="absolute inset-0 opacity-[0.22] dark:opacity-[0.28]"
         style={{
           backgroundImage: `radial-gradient(circle, currentColor 1.5px, transparent 1.5px)`,
           backgroundSize: "32px 32px",
@@ -308,22 +308,22 @@ export function AgenticBackground() {
       />
 
       {/* 3. Ambient Lighting Glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-foreground/[0.035] rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-foreground/[0.045] rounded-full blur-[140px] pointer-events-none" />
 
       {/* 4. Canvas Node Layer */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
 
       {/* 5. Peripheral HUD Coordinates */}
-      <div className="absolute top-3 left-4 font-mono text-[9px] text-muted-foreground/60 tracking-wider hidden md:block">
+      <div className="absolute top-3 left-4 font-mono text-[9px] text-muted-foreground/80 tracking-wider hidden md:block">
         + 0x00_ROOT · AUTONOMOUS_GOVERNANCE_ACTIVE
       </div>
-      <div className="absolute top-3 right-4 font-mono text-[9px] text-muted-foreground/60 tracking-wider hidden md:block">
+      <div className="absolute top-3 right-4 font-mono text-[9px] text-muted-foreground/80 tracking-wider hidden md:block">
         OTEL_SPAN_STREAM · 1000MS_SAMPLING +
       </div>
-      <div className="absolute bottom-3 left-4 font-mono text-[9px] text-muted-foreground/60 tracking-wider hidden md:block">
+      <div className="absolute bottom-3 left-4 font-mono text-[9px] text-muted-foreground/80 tracking-wider hidden md:block">
         + GKE_CLOUD_DEPLOY · TWO_TIER_GATEWAY
       </div>
-      <div className="absolute bottom-3 right-4 font-mono text-[9px] text-muted-foreground/60 tracking-wider hidden md:block">
+      <div className="absolute bottom-3 right-4 font-mono text-[9px] text-muted-foreground/80 tracking-wider hidden md:block">
         VERTEX_EMBED_004 · 5_OF_5_SAFE_VERIFIED +
       </div>
     </div>

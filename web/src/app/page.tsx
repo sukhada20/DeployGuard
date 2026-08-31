@@ -13,7 +13,7 @@ import { LandingFooter } from "@/components/landing/LandingFooter";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background text-foreground selection:bg-foreground selection:text-background">
+    <div className="min-h-[100dvh] flex flex-col bg-transparent text-foreground selection:bg-foreground selection:text-background">
       {/* 1. Top Navigation */}
       <LandingHeader />
 
