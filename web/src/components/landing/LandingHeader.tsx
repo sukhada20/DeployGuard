@@ -3,10 +3,31 @@
 import React from "react";
 import Link from "next/link";
 import { ShieldCheck, ArrowRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
+const NAV_ITEMS = [
+  { href: "#architecture", label: "Architecture" },
+  { href: "#fleet", label: "Fleet Agents" },
+  { href: "#governance", label: "Governance Trace" },
+  { href: "#postmortems", label: "Postmortems" },
+  { href: "#telemetry", label: "Telemetry SLA" },
+];
+
 export function LandingHeader() {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const targetId = href.replace("#", "");
+    const targetElement = document.getElementById(targetId);
+    if (targetElement) {
+      targetElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+      window.history.pushState(null, "", href);
+    }
+  };
+
   return (
     <div className="sticky top-3 z-50 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto w-full">
       <header className="border-2 border-border bg-card/90 backdrop-blur-md px-4 sm:px-6 py-2.5 shadow-2xl flex items-center justify-between gap-4">
@@ -24,18 +45,14 @@ export function LandingHeader() {
           </span>
         </Link>
 
-        {/* Center Nav Links with Wipe Rectangle Hover */}
-        <nav className="hidden md:flex items-center gap-2 text-xs font-mono">
-          {[
-            { href: "#architecture", label: "Architecture" },
-            { href: "#telemetry", label: "Telemetry SLA" },
-            { href: "#fleet", label: "Fleet Agents" },
-            { href: "#governance", label: "Governance Trace" },
-          ].map((item) => (
+        {/* Center Nav Links with Wipe Rectangle Hover (Chronological + Center Aligned) */}
+        <nav className="hidden md:flex items-center gap-1.5 text-xs font-mono">
+          {NAV_ITEMS.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="relative overflow-hidden group px-3 py-1.5 border border-transparent hover:border-border transition-colors select-none"
+              onClick={(e) => handleNavClick(e, item.href)}
+              className="relative overflow-hidden group px-3 py-1.5 border border-transparent hover:border-border transition-colors select-none cursor-pointer"
             >
               <span className="absolute inset-0 bg-foreground translate-y-full group-hover:translate-y-0 transition-transform duration-200 ease-out pointer-events-none" />
               <span className="relative z-10 text-muted-foreground group-hover:text-background font-bold transition-colors duration-200">
