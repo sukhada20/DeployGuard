@@ -3,10 +3,9 @@
 import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
 
 export function ThemeToggle() {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -15,33 +14,32 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="outline" size="sm" className="h-7 px-2 border-border text-muted-foreground">
+      <div className="w-8 h-8 border-2 border-border bg-card flex items-center justify-center text-muted-foreground">
         <span className="w-3.5 h-3.5" />
-      </Button>
+      </div>
     );
   }
 
   const isDark = resolvedTheme === "dark";
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
+    <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="h-7 px-2.5 gap-1.5 font-mono text-[11px] uppercase border-border hover:border-foreground"
+      className="relative overflow-hidden group w-8 h-8 border-2 border-border bg-card flex items-center justify-center hover:border-foreground transition-colors cursor-pointer select-none"
       title={`Switch to ${isDark ? "Light" : "Dark"} mode`}
+      aria-label="Toggle theme"
     >
-      {isDark ? (
-        <>
-          <Sun className="w-3.5 h-3.5 text-amber-400" />
-          <span>Light</span>
-        </>
-      ) : (
-        <>
-          <Moon className="w-3.5 h-3.5 text-foreground" />
-          <span>Dark</span>
-        </>
-      )}
-    </Button>
+      {/* Wipe Rectangle from bottom to top */}
+      <span className="absolute inset-0 bg-foreground translate-y-full group-hover:translate-y-0 transition-transform duration-200 ease-out pointer-events-none" />
+
+      {/* Monochrome Icon */}
+      <span className="relative z-10 text-foreground group-hover:text-background transition-colors duration-200 flex items-center justify-center">
+        {isDark ? (
+          <Sun className="w-3.5 h-3.5" />
+        ) : (
+          <Moon className="w-3.5 h-3.5" />
+        )}
+      </span>
+    </button>
   );
 }

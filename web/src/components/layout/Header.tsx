@@ -2,10 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
-import { ShieldCheck, ShieldAlert, Server, Home } from "lucide-react";
+import { ShieldCheck, Server, Home } from "lucide-react";
 import { DashboardOverview } from "@/types/api";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 interface HeaderProps {
@@ -18,90 +17,76 @@ export const Header: React.FC<HeaderProps> = ({ overview, isSseConnected }) => {
   const dep = overview?.active_deployment;
 
   return (
-    <header className="border-b border-border bg-background/85 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-8 py-3">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-        {/* Brand */}
-        <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <ShieldCheck className="w-6 h-6 text-foreground transition-transform group-hover:scale-105" />
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-mono font-black text-base tracking-tight text-foreground uppercase">
-                  DeployGuard
-                </span>
-                <Badge variant="brutalist" className="text-[10px] px-1.5 py-0.5 hidden sm:inline-flex font-mono font-bold">
-                  CONSOLE
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground font-mono">
-                Autonomous SRE Governance Cockpit
-              </p>
-            </div>
+    <div className="sticky top-3 z-40 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto w-full">
+      <header className="border-2 border-border bg-card/90 backdrop-blur-md px-4 sm:px-6 py-2.5 shadow-2xl flex items-center justify-between gap-4">
+        {/* Left: Brand & Overview button with Wipe Animation */}
+        <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="relative overflow-hidden group px-2 py-1 flex items-center gap-2 border border-transparent hover:border-border transition-colors select-none"
+          >
+            <span className="absolute inset-0 bg-foreground translate-y-full group-hover:translate-y-0 transition-transform duration-200 ease-out pointer-events-none" />
+            <span className="relative z-10 text-foreground group-hover:text-background transition-colors duration-200 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 shrink-0" />
+              <span className="font-mono font-black text-sm tracking-tight uppercase">
+                DeployGuard
+              </span>
+            </span>
           </Link>
 
-          {/* Return to Overview Link */}
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-            className="h-8 text-xs font-mono font-bold gap-1.5 border-border hover:border-foreground"
+          <Badge variant="brutalist" className="text-[10px] px-1.5 py-0.5 font-mono font-bold hidden sm:inline-flex">
+            CONSOLE
+          </Badge>
+
+          {/* Overview button with Bottom-to-Top Wipe */}
+          <Link
+            href="/"
+            className="relative overflow-hidden group h-8 px-3 border-2 border-border bg-card flex items-center gap-1.5 font-mono text-xs font-bold uppercase hover:border-foreground transition-colors select-none"
           >
-            <Link href="/">
+            <span className="absolute inset-0 bg-foreground translate-y-full group-hover:translate-y-0 transition-transform duration-200 ease-out pointer-events-none" />
+            <span className="relative z-10 text-foreground group-hover:text-background transition-colors duration-200 flex items-center gap-1.5">
               <Home className="w-3.5 h-3.5" />
               <span>Overview</span>
-            </Link>
-          </Button>
-
-          {/* Mobile Theme */}
-          <div className="flex md:hidden items-center gap-2">
-            <ThemeToggle />
-          </div>
+            </span>
+          </Link>
         </div>
 
-        {/* Center: Active Pipeline Strip */}
-        <div className="flex items-center gap-3 bg-muted/40 border-2 border-border px-3.5 py-1.5 text-xs font-mono w-full md:w-auto justify-center shadow-sm">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Server className="w-4 h-4 text-foreground" />
-            <span className="text-foreground font-bold">{dep?.service_name || "checkout-service"}</span>
-          </div>
-          <span className="text-border">|</span>
-          <div className="flex items-center gap-1">
-            <span className="text-foreground font-semibold">{dep?.target_version || "v2.4.0"}</span>
-            <span className="text-muted-foreground">→</span>
-            <span className="text-foreground font-semibold">{dep?.stable_version || "v2.3.9"}</span>
-          </div>
-          <span className="text-border">|</span>
-          <div className="flex items-center gap-1.5">
-            <span className="text-muted-foreground text-xs font-bold">STATUS:</span>
+        {/* Center: Minimal Active Service Strip */}
+        <div className="hidden md:flex items-center gap-2 px-3 py-1 border-2 border-border bg-muted/30 text-xs font-mono">
+          <Server className="w-3.5 h-3.5 text-foreground shrink-0" />
+          <span className="font-bold text-foreground">{dep?.service_name || "checkout-service"}</span>
+          <span className="text-muted-foreground">·</span>
+          <span className="text-foreground">{dep?.target_version || "v2.4.0"}</span>
+          <span className="text-muted-foreground">→</span>
+          <span className="text-foreground">{dep?.stable_version || "v2.3.9"}</span>
+          <span className="text-muted-foreground">·</span>
+          <span
+            className={`font-bold uppercase ${
+              isIncident
+                ? "text-rose-600 dark:text-rose-400 animate-pulse font-black"
+                : "text-emerald-600 dark:text-emerald-400"
+            }`}
+          >
+            {dep?.pipeline_status || "monitoring"}
+          </span>
+        </div>
+
+        {/* Right: Fleet Status, SSE Indicator & Monochrome Theme Toggle */}
+        <div className="flex items-center gap-2.5">
+          {/* Status Indicator */}
+          <div className="flex items-center gap-1.5 px-2.5 h-8 border-2 border-border bg-muted/30 text-xs font-mono font-bold text-foreground">
             <span
-              className={`uppercase font-bold ${
-                isIncident
-                  ? "text-rose-600 dark:text-rose-400 animate-pulse font-black"
-                  : "text-emerald-600 dark:text-emerald-400"
+              className={`w-2 h-2 rounded-full ${
+                isIncident ? "bg-rose-500 animate-pulse" : "bg-emerald-500"
               }`}
-            >
-              {dep?.pipeline_status || "monitoring"}
+            />
+            <span className="hidden sm:inline">
+              {isIncident ? "INCIDENT" : "FLEET ARMORED"}
             </span>
           </div>
-        </div>
 
-        {/* Right: Health Badge, SSE indicator & Theme Toggle */}
-        <div className="hidden md:flex items-center gap-3">
-          {/* Status Badge */}
-          {isIncident ? (
-            <Badge variant="destructive" className="h-8 px-3 gap-1.5 font-bold font-mono text-xs">
-              <ShieldAlert className="w-4 h-4" />
-              <span>INCIDENT ACTIVE</span>
-            </Badge>
-          ) : (
-            <Badge variant="success" className="h-8 px-3 gap-1.5 font-bold font-mono text-xs">
-              <ShieldCheck className="w-4 h-4" />
-              <span>FLEET ARMORED</span>
-            </Badge>
-          )}
-
-          {/* Live SSE Stream */}
-          <div className="flex items-center gap-2 px-3 h-8 border-2 border-border bg-muted/40 text-xs font-mono text-foreground font-bold">
+          {/* Live SSE Indicator */}
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 h-8 border-2 border-border bg-muted/30 text-xs font-mono font-bold text-foreground">
             <span
               className={`w-2 h-2 rounded-full ${
                 isSseConnected ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground"
@@ -110,10 +95,10 @@ export const Header: React.FC<HeaderProps> = ({ overview, isSseConnected }) => {
             <span>{isSseConnected ? "LIVE SSE" : "OFFLINE"}</span>
           </div>
 
-          {/* Theme Switcher */}
+          {/* Monochrome Icon-only Theme Toggle with Wipe Animation */}
           <ThemeToggle />
         </div>
-      </div>
-    </header>
+      </header>
+    </div>
   );
 };
