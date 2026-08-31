@@ -25,7 +25,7 @@ export function LogoWall() {
   ];
 
   return (
-    <div className="border-b border-border bg-muted/20 py-6 px-4 lg:px-6">
+    <div className="border-b border-border bg-background/40 backdrop-blur-[2px] py-6 px-4 lg:px-6">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground shrink-0">
           Native Cloud Platform Connectors:

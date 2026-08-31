@@ -79,7 +79,7 @@ export function FleetShowcase() {
   const Icon = activeAgent.icon;
 
   return (
-    <section id="fleet" className="py-16 px-4 lg:px-6 border-b border-border bg-muted/10">
+    <section id="fleet" className="py-16 px-4 lg:px-6 border-b border-border bg-background/40 backdrop-blur-[2px]">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Section Header */}
         <div className="space-y-2 max-w-[65ch]">
