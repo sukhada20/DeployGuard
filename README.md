@@ -52,6 +52,7 @@ flowchart TD
 (Vector Search & Firestore Memory)"]
         DA["3. Decision Agent
 (Gemini 2.5 Flash + PolicyEngine)"]
+(Gemini 3.5 Flash + PolicyEngine)"]
         RA["4. Rollback Agent
 (Cloud Deploy Execution)"]
         PMA["5. Postmortem Agent
@@ -107,6 +108,7 @@ Incidents & Postmortems")]
 ├──────────────────────────┬──────────────────────────┬───────────────────────┤
 │ 1. Deploy Monitor Agent  │ 2. Incident Memory Agent │ 3. Decision Agent     │
 │    • 7-dim baseline diff │    • Vector embeddings   │    • Gemini 2.5 Flash │
+│    • 7-dim baseline diff │    • Vector embeddings   │    • Gemini 3.5 Flash │
 │    • Multi-step recovery │    • Historical lookup   │    • PolicyEngine     │
 ├──────────────────────────┼──────────────────────────┼───────────────────────┤
 │ 4. Rollback Agent        │ 5. Postmortem Agent      │ 🛡️ Security Gateways  │
@@ -201,12 +203,47 @@ The verification gate executes:
 DeployGuard is designed natively for Google Cloud Platform services:
 - **Compute**: Cloud Run (Containerized FastAPI API & Web SPA)
 - **Agent Intelligence**: Vertex AI (Gemini 2.5 Flash) & Google ADK
+- **Agent Intelligence**: Vertex AI (Gemini 3.5 Flash) & Google ADK
 - **Security & Safety**: Vertex AI Model Armor & IAM Service Accounts
 - **Deployment**: Google Cloud Deploy & Cloud Build
 - **Telemetry**: Google Cloud Monitoring & Cloud Logging
 - **Memory & Storage**: Cloud Firestore (with Vector Search) & Cloud Trace
 
 👉 **See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for the complete step-by-step GCP production deployment manual.**
+
+---
+
+## 🧪 Testing the Deployed Cloud Run App
+
+To test the deployed Cloud Run application continuously, you can create a test repository and configure GitHub Actions:
+
+1. Create a new GitHub repository (e.g., `deployguard-e2e-tests`).
+2. Add a GitHub Actions workflow `.github/workflows/main.yml`:
+
+```yaml
+name: E2E Cloud Run Tests
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 */6 * * *' # Run every 6 hours
+
+jobs:
+  test-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Health Endpoint
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://YOUR_CLOUD_RUN_URL/api/v1/health)
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "Health check failed with status $HTTP_STATUS"
+            exit 1
+          fi
+          echo "Health check passed!"
+```
+3. Replace `YOUR_CLOUD_RUN_URL` with the actual URL of your deployed Cloud Run service.
+4. The GitHub Action will automatically run tests on every push and periodically to ensure the deployment remains healthy.
 
 ---
 
