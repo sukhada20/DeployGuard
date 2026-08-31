@@ -2,120 +2,107 @@
 
 import React, { useEffect, useRef, useState } from "react";
 
-interface Node {
+interface Particle {
   x: number;
   y: number;
   vx: number;
   vy: number;
   size: number;
+  pulse: number;
   label?: string;
-  phase: number;
 }
 
-interface Packet {
-  fromIndex: number;
-  toIndex: number;
+interface StreamPacket {
+  sourceIndex: number;
+  targetIndex: number;
   progress: number;
   speed: number;
 }
 
 export function AgenticBackground() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const mouseRef = useRef({
-    targetX: -1000,
-    targetY: -1000,
-    currX: -1000,
-    currY: -1000,
-    active: false,
-  });
+  const mouseRef = useRef({ x: -1000, y: -1000, targetX: -1000, targetY: -1000, active: false });
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    setIsClient(true);
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const onMouseMove = (e: MouseEvent) => {
       mouseRef.current.targetX = e.clientX;
       mouseRef.current.targetY = e.clientY;
       mouseRef.current.active = true;
-      if (mouseRef.current.currX < 0) {
-        mouseRef.current.currX = e.clientX;
-        mouseRef.current.currY = e.clientY;
+      if (mouseRef.current.x < 0) {
+        mouseRef.current.x = e.clientX;
+        mouseRef.current.y = e.clientY;
       }
     };
 
-    const handleMouseLeave = () => {
+    const onMouseLeave = () => {
       mouseRef.current.active = false;
     };
 
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    window.addEventListener("mouseleave", handleMouseLeave);
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
+    window.addEventListener("mouseleave", onMouseLeave);
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseleave", onMouseLeave);
     };
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
+    if (!isClient) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animationFrameId: number;
-    let width = window.innerWidth;
-    let height = window.innerHeight;
+    let animId: number;
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
 
-    const resize = () => {
+    const handleResize = () => {
       if (!canvas) return;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
     };
 
-    resize();
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", handleResize);
 
-    // SRE & Agent telemetry labels
     const LABELS = [
       "agent:deploy_monitor",
-      "gemini:reasoning_engine",
-      "cloud_deploy:armed",
-      "otel:span_0x4f92",
+      "gemini:reasoning_core",
+      "cloud_deploy:rollback_armed",
+      "otel:span_0x7f2a",
       "mttr:38.4s",
-      "model_armor:active",
+      "model_armor:enforced",
       "firestore:vector_004",
       "policy:5_of_5_pass",
-      "gke:ingress_ok",
+      "gke:gateway_active",
       "telemetry:sampling_1000ms",
-      "rollback:target_v2.3.9",
-      "status:autonomous_active",
+      "cloud_monitoring:nominal",
+      "postmortem:generator_ready",
     ];
 
-    // Generate balanced network nodes
-    const nodeCount = Math.max(24, Math.min(40, Math.floor((width * height) / 26000)));
-    const nodes: Node[] = Array.from({ length: nodeCount }, (_, i) => ({
+    // Initialize Particles (30 to 45 nodes)
+    const count = Math.max(28, Math.min(48, Math.floor((width * height) / 22000)));
+    const particles: Particle[] = Array.from({ length: count }, (_, i) => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.35,
-      vy: (Math.random() - 0.5) * 0.35,
-      size: Math.random() > 0.6 ? 4 : 2.5,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      size: Math.random() > 0.6 ? 5 : 3.5,
+      pulse: Math.random() * Math.PI * 2,
       label: i < LABELS.length ? LABELS[i] : undefined,
-      phase: Math.random() * Math.PI * 2,
     }));
 
-    const packets: Packet[] = [];
-    const maxPackets = 14;
+    const packets: StreamPacket[] = [];
+    const maxPackets = 16;
     let time = 0;
+    let scanlineY = 0;
 
-    const render = () => {
-      time += 0.015;
+    const draw = () => {
+      time += 0.02;
       ctx.clearRect(0, 0, width, height);
 
       const isDark = document.documentElement.classList.contains("dark");
@@ -123,163 +110,164 @@ export function AgenticBackground() {
       // Smooth mouse lerp
       const mouse = mouseRef.current;
       if (mouse.active) {
-        mouse.currX += (mouse.targetX - mouse.currX) * 0.06;
-        mouse.currY += (mouse.targetY - mouse.currY) * 0.06;
+        mouse.x += (mouse.targetX - mouse.x) * 0.05;
+        mouse.y += (mouse.targetY - mouse.y) * 0.05;
       }
 
-      // 1. Draw Subtle Ambient Spotlight around Mouse
-      if (mouse.active && mouse.currX > 0 && mouse.currY > 0) {
-        const glow = ctx.createRadialGradient(
-          mouse.currX,
-          mouse.currY,
-          0,
-          mouse.currX,
-          mouse.currY,
-          260
-        );
-        glow.addColorStop(0, isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)");
-        glow.addColorStop(1, "transparent");
-        ctx.fillStyle = glow;
+      // 1. Moving Telemetry Scanline
+      scanlineY = (scanlineY + 0.75) % height;
+      const scanGrad = ctx.createLinearGradient(0, scanlineY - 20, 0, scanlineY + 20);
+      scanGrad.addColorStop(0, "transparent");
+      scanGrad.addColorStop(0.5, isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.04)");
+      scanGrad.addColorStop(1, "transparent");
+      ctx.fillStyle = scanGrad;
+      ctx.fillRect(0, scanlineY - 20, width, 40);
+
+      // 2. Smooth Cursor Ambient Spotlight
+      if (mouse.active && mouse.x > 0 && mouse.y > 0) {
+        const spotGrad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 300);
+        spotGrad.addColorStop(0, isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.05)");
+        spotGrad.addColorStop(1, "transparent");
+        ctx.fillStyle = spotGrad;
         ctx.beginPath();
-        ctx.arc(mouse.currX, mouse.currY, 260, 0, Math.PI * 2);
+        ctx.arc(mouse.x, mouse.y, 300, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // 2. Update and Draw Nodes & Connecting Links
-      for (let i = 0; i < nodes.length; i++) {
-        const node = nodes[i];
+      // 3. Update & Draw Particles and Inter-Node Connections
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.pulse += 0.03;
 
-        // Smooth sinusoidal floating
-        node.x += node.vx + Math.sin(time + node.phase) * 0.2;
-        node.y += node.vy + Math.cos(time + node.phase) * 0.2;
+        // Smooth sinusoidal drift
+        p.x += p.vx + Math.sin(time + p.pulse) * 0.25;
+        p.y += p.vy + Math.cos(time + p.pulse) * 0.25;
 
         // Wrap around bounds
-        if (node.x < -20) node.x = width + 20;
-        if (node.x > width + 20) node.x = -20;
-        if (node.y < -20) node.y = height + 20;
-        if (node.y > height + 20) node.y = -20;
+        if (p.x < -30) p.x = width + 30;
+        if (p.x > width + 30) p.x = -30;
+        if (p.y < -30) p.y = height + 30;
+        if (p.y > height + 30) p.y = -30;
 
-        // Distance to smooth mouse
+        // Check proximity to smooth cursor
         let mouseDist = 999;
         if (mouse.active) {
-          const dx = node.x - mouse.currX;
-          const dy = node.y - mouse.currY;
+          const dx = p.x - mouse.x;
+          const dy = p.y - mouse.y;
           mouseDist = Math.sqrt(dx * dx + dy * dy);
         }
-        const isNearMouse = mouseDist < 180;
-        const proximityRatio = isNearMouse ? 1 - mouseDist / 180 : 0;
+        const isNearCursor = mouseDist < 200;
+        const prox = isNearCursor ? 1 - mouseDist / 200 : 0;
 
-        // Draw connections to nearby nodes
-        for (let j = i + 1; j < nodes.length; j++) {
-          const other = nodes[j];
-          const dx = node.x - other.x;
-          const dy = node.y - other.y;
+        // Draw Inter-node Links
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const dx = p.x - p2.x;
+          const dy = p.y - p2.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < 170) {
-            const alphaRatio = 1 - dist / 170;
-            const lineAlpha = (isDark ? 0.08 : 0.07) + alphaRatio * (isDark ? 0.22 : 0.18);
-
+          if (dist < 180) {
+            const alpha = (1 - dist / 180) * (isDark ? 0.22 : 0.16) + (prox * 0.15);
             ctx.strokeStyle = isDark
-              ? `rgba(255, 255, 255, ${lineAlpha})`
-              : `rgba(0, 0, 0, ${lineAlpha})`;
+              ? `rgba(255, 255, 255, ${alpha})`
+              : `rgba(0, 0, 0, ${alpha})`;
             ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.moveTo(node.x, node.y);
-            ctx.lineTo(other.x, other.y);
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
             ctx.stroke();
 
-            // Spawn data packet along connection line
-            if (packets.length < maxPackets && Math.random() < 0.004) {
+            // Spawn data packet
+            if (packets.length < maxPackets && Math.random() < 0.005) {
               packets.push({
-                fromIndex: i,
-                toIndex: j,
+                sourceIndex: i,
+                targetIndex: j,
                 progress: 0,
-                speed: 0.007 + Math.random() * 0.01,
+                speed: 0.006 + Math.random() * 0.01,
               });
             }
           }
         }
 
-        // Draw Node Point & Halo
-        const nodeAlpha = (isDark ? 0.55 : 0.5) + proximityRatio * 0.45;
+        // Draw Particle Node (crisp diamond / square)
+        const nodeSize = p.size + prox * 2;
+        const nodeAlpha = isDark ? 0.65 + prox * 0.35 : 0.55 + prox * 0.4;
         ctx.fillStyle = isDark
           ? `rgba(255, 255, 255, ${nodeAlpha})`
           : `rgba(0, 0, 0, ${nodeAlpha})`;
 
-        const r = node.size + proximityRatio * 2;
-        ctx.fillRect(node.x - r / 2, node.y - r / 2, r, r);
+        ctx.fillRect(p.x - nodeSize / 2, p.y - nodeSize / 2, nodeSize, nodeSize);
 
-        // Subtle outer pulse halo
-        if (node.size > 3 || isNearMouse) {
-          ctx.strokeStyle = isDark
-            ? `rgba(255, 255, 255, ${0.15 + proximityRatio * 0.3})`
-            : `rgba(0, 0, 0, ${0.12 + proximityRatio * 0.25})`;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.arc(node.x, node.y, r + 4 + Math.sin(time * 2 + node.phase) * 2, 0, Math.PI * 2);
-          ctx.stroke();
-        }
+        // Glowing outer pulse ring
+        const ringRadius = nodeSize * 2.2 + Math.sin(p.pulse) * 3;
+        ctx.strokeStyle = isDark
+          ? `rgba(255, 255, 255, ${0.18 + prox * 0.3})`
+          : `rgba(0, 0, 0, ${0.14 + prox * 0.25})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, ringRadius, 0, Math.PI * 2);
+        ctx.stroke();
 
         // Draw Monospace Telemetry Label
-        if (node.label) {
-          ctx.font = "10px ui-monospace, SFMono-Regular, Menlo, monospace";
-          const textAlpha = (isDark ? 0.35 : 0.4) + proximityRatio * 0.5;
+        if (p.label) {
+          ctx.font = "bold 9px ui-monospace, SFMono-Regular, Menlo, monospace";
+          const labelAlpha = isDark ? 0.45 + prox * 0.45 : 0.45 + prox * 0.45;
           ctx.fillStyle = isDark
-            ? `rgba(255, 255, 255, ${textAlpha})`
-            : `rgba(0, 0, 0, ${textAlpha})`;
-          ctx.fillText(`[${node.label}]`, node.x + 8, node.y + 3);
+            ? `rgba(255, 255, 255, ${labelAlpha})`
+            : `rgba(0, 0, 0, ${labelAlpha})`;
+          ctx.fillText(`[${p.label}]`, p.x + 10, p.y + 3);
         }
       }
 
-      // 3. Draw Traveling Data Packets
-      for (let p = packets.length - 1; p >= 0; p--) {
-        const pkt = packets[p];
+      // 4. Draw Traveling Data Packets
+      for (let k = packets.length - 1; k >= 0; k--) {
+        const pkt = packets[k];
         pkt.progress += pkt.speed;
 
-        const from = nodes[pkt.fromIndex];
-        const to = nodes[pkt.toIndex];
+        const src = particles[pkt.sourceIndex];
+        const tgt = particles[pkt.targetIndex];
 
-        if (!from || !to || pkt.progress >= 1) {
-          packets.splice(p, 1);
+        if (!src || !tgt || pkt.progress >= 1) {
+          packets.splice(k, 1);
           continue;
         }
 
-        const px = from.x + (to.x - from.x) * pkt.progress;
-        const py = from.y + (to.y - from.y) * pkt.progress;
+        const currX = src.x + (tgt.x - src.x) * pkt.progress;
+        const currY = src.y + (tgt.y - src.y) * pkt.progress;
 
-        // Bright packet
+        // Bright Glowing Data Packet Head
         ctx.fillStyle = isDark ? "rgba(255, 255, 255, 0.95)" : "rgba(0, 0, 0, 0.9)";
-        ctx.fillRect(px - 2, py - 2, 4, 4);
+        ctx.fillRect(currX - 2.5, currY - 2.5, 5, 5);
 
-        // Packet tracer trail
-        const trailProgress = Math.max(0, pkt.progress - 0.05);
-        const tx = from.x + (to.x - from.x) * trailProgress;
-        const ty = from.y + (to.y - from.y) * trailProgress;
+        // Glowing Trail
+        const trailProg = Math.max(0, pkt.progress - 0.08);
+        const trailX = src.x + (tgt.x - src.x) * trailProg;
+        const trailY = src.y + (tgt.y - src.y) * trailProg;
+
         ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.4)";
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(tx, ty);
-        ctx.lineTo(px, py);
+        ctx.moveTo(trailX, trailY);
+        ctx.lineTo(currX, currY);
         ctx.stroke();
       }
 
-      animationFrameId = requestAnimationFrame(render);
+      animId = requestAnimationFrame(draw);
     };
 
-    render();
+    draw();
 
     return () => {
-      window.removeEventListener("resize", resize);
-      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener("resize", handleResize);
+      cancelAnimationFrame(animId);
     };
-  }, [mounted]);
+  }, [isClient]);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none" aria-hidden="true">
-      {/* 1. Visible CSS Architectural Grid */}
+      {/* 1. Engineering Coordinate Grid with High Contrast */}
       <div
-        className="absolute inset-0 opacity-[0.06] dark:opacity-[0.08]"
+        className="absolute inset-0 opacity-[0.08] dark:opacity-[0.12]"
         style={{
           backgroundImage: `
             linear-gradient(to right, currentColor 1px, transparent 1px),
@@ -289,34 +277,33 @@ export function AgenticBackground() {
         }}
       />
 
-      {/* 2. Micro Dot Matrix Pattern */}
+      {/* 2. Micro Coordinate Dots */}
       <div
-        className="absolute inset-0 opacity-[0.12] dark:opacity-[0.15]"
+        className="absolute inset-0 opacity-[0.16] dark:opacity-[0.22]"
         style={{
-          backgroundImage: `radial-gradient(circle, currentColor 1.2px, transparent 1.2px)`,
+          backgroundImage: `radial-gradient(circle, currentColor 1.5px, transparent 1.5px)`,
           backgroundSize: "32px 32px",
         }}
       />
 
-      {/* 3. Deep Ambient Atmospheric Depth Gradients */}
-      <div className="absolute -top-40 -right-40 w-96 h-96 bg-foreground/[0.03] rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-foreground/[0.03] rounded-full blur-3xl pointer-events-none" />
+      {/* 3. Ambient Lighting Glow Orbs */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-foreground/[0.035] rounded-full blur-[120px] pointer-events-none" />
 
-      {/* 4. Live Canvas Node & Telemetry Stream */}
+      {/* 4. Canvas Node Layer */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
 
-      {/* 5. Peripheral Corner HUD Coordinates */}
-      <div className="absolute top-3 left-4 font-mono text-[9px] text-muted-foreground/50 tracking-wider hidden md:block">
-        + 0x00_FLEET_ROOT · AUTONOMOUS_GOVERNANCE
+      {/* 5. Peripheral HUD Coordinates */}
+      <div className="absolute top-3 left-4 font-mono text-[9px] text-muted-foreground/60 tracking-wider hidden md:block">
+        + 0x00_ROOT · AUTONOMOUS_GOVERNANCE_ACTIVE
       </div>
-      <div className="absolute top-3 right-4 font-mono text-[9px] text-muted-foreground/50 tracking-wider hidden md:block">
-        OTEL_SPAN_STREAM · SAMPLING_1000MS +
+      <div className="absolute top-3 right-4 font-mono text-[9px] text-muted-foreground/60 tracking-wider hidden md:block">
+        OTEL_SPAN_STREAM · 1000MS_SAMPLING +
       </div>
-      <div className="absolute bottom-3 left-4 font-mono text-[9px] text-muted-foreground/50 tracking-wider hidden md:block">
-        + GKE_CLOUD_DEPLOY · ARMORED_GATEWAY
+      <div className="absolute bottom-3 left-4 font-mono text-[9px] text-muted-foreground/60 tracking-wider hidden md:block">
+        + GKE_CLOUD_DEPLOY · TWO_TIER_GATEWAY
       </div>
-      <div className="absolute bottom-3 right-4 font-mono text-[9px] text-muted-foreground/50 tracking-wider hidden md:block">
-        VERTEX_EMBED_004 · 5_OF_5_POLICIES_PASS +
+      <div className="absolute bottom-3 right-4 font-mono text-[9px] text-muted-foreground/60 tracking-wider hidden md:block">
+        VERTEX_EMBED_004 · 5_OF_5_SAFE_VERIFIED +
       </div>
     </div>
   );
