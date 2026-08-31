@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from deployguard.api.dashboard import router as dashboard_router
+from deployguard.api.deployments import router as deployments_router
 from deployguard.api.events import router as events_router
 from deployguard.api.health import router as health_router
 from deployguard.api.postmortems import router as postmortems_router
@@ -55,6 +56,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router)
     app.include_router(registry_router)
     app.include_router(dashboard_router)
+    app.include_router(deployments_router)
     app.include_router(events_router)
     app.include_router(traces_router)
     app.include_router(postmortems_router)
