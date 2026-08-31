@@ -286,40 +286,28 @@ export function AgenticBackground() {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none" aria-hidden="true">
-      {/* 1. Engineering Coordinate Grid: appears only on left and right edges with smooth fade-in */}
       {/* 1. Engineering Coordinate Grid: ultra-soft feathered fade from left and right edges */}
       <div
-        className="absolute inset-0 transition-opacity duration-1000 ease-out"
         className="absolute inset-0 transition-opacity duration-1500 ease-out"
         style={{
-          opacity: mounted ? 0.22 : 0,
           opacity: mounted ? 0.20 : 0,
           backgroundImage: `
             linear-gradient(to right, currentColor 1px, transparent 1px),
             linear-gradient(to bottom, currentColor 1px, transparent 1px)
           `,
           backgroundSize: "64px 64px",
-          maskImage: "linear-gradient(to right, black 0%, black 14%, transparent 34%, transparent 66%, black 86%, black 100%)",
-          WebkitMaskImage: "linear-gradient(to right, black 0%, black 14%, transparent 34%, transparent 66%, black 86%, black 100%)",
           maskImage: "linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 6%, rgba(0,0,0,0.2) 14%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 78%, rgba(0,0,0,0.2) 86%, rgba(0,0,0,0.6) 94%, rgba(0,0,0,1) 100%)",
           WebkitMaskImage: "linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 6%, rgba(0,0,0,0.2) 14%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 78%, rgba(0,0,0,0.2) 86%, rgba(0,0,0,0.6) 94%, rgba(0,0,0,1) 100%)",
         }}
       />
 
-      {/* 2. Micro Coordinate Dots: left and right edges with smooth fade-in */}
       {/* 2. Micro Coordinate Dots: soft feathered fade on left and right edges */}
       <div
-        className="absolute inset-0 transition-opacity duration-1000 ease-out"
         className="absolute inset-0 transition-opacity duration-1500 ease-out"
         style={{
-          opacity: mounted ? 0.32 : 0,
           opacity: mounted ? 0.28 : 0,
           backgroundImage: `radial-gradient(circle, currentColor 1.5px, transparent 1.5px)`,
           backgroundSize: "32px 32px",
-          maskImage: "linear-gradient(to right, black 0%, black 12%, transparent 30%, transparent 70%, black 88%, black 100%)",
-          WebkitMaskImage: "linear-gradient(to right, black 0%, black 12%, transparent 30%, transparent 70%, black 88%, black 100%)",
-          maskImage: "linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 5%, rgba(0,0,0,0.15) 12%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 80%, rgba(0,0,0,0.15) 88%, rgba(0,0,0,0.5) 95%, rgba(0,0,0,1) 100%)",
-          WebkitMaskImage: "linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 5%, rgba(0,0,0,0.15) 12%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 80%, rgba(0,0,0,0.15) 88%, rgba(0,0,0,0.5) 95%, rgba(0,0,0,1) 100%)",
         }}
       />
 

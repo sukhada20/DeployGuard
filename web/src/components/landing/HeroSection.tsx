@@ -2,9 +2,19 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ShieldCheck, Play, ArrowRight, Activity, RefreshCw } from "lucide-react";
+import {
+  ShieldCheck,
+  Play,
+  ArrowRight,
+  Activity,
+  RefreshCw,
+  Terminal,
+  Cpu,
+  Lock,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export function HeroSection() {
   const [simState, setSimState] = useState<"nominal" | "spike" | "analyzing" | "policy" | "rollback" | "recovered">("nominal");
@@ -17,19 +27,19 @@ export function HeroSection() {
 
     setTimeout(() => {
       setSimState("analyzing");
-    }, 1000);
+    }, 1100);
 
     setTimeout(() => {
       setSimState("policy");
-    }, 2200);
+    }, 2300);
 
     setTimeout(() => {
       setSimState("rollback");
-    }, 3400);
+    }, 3600);
 
     setTimeout(() => {
       setSimState("recovered");
-    }, 4800);
+    }, 5000);
   };
 
   useEffect(() => {
@@ -47,7 +57,7 @@ export function HeroSection() {
       key: "spike",
       num: "01",
       name: "DETECT",
-      label: simState === "nominal" ? "Nominal (0.010)" : "14.5x Anomaly Spike",
+      label: simState === "nominal" ? "1000ms Sampling" : "14.5x Error Spike",
       isCurrent: simState === "spike",
       isPassed: ["analyzing", "policy", "rollback", "recovered"].includes(simState),
     },
@@ -55,7 +65,7 @@ export function HeroSection() {
       key: "analyzing",
       num: "02",
       name: "MEMORY",
-      label: simState === "analyzing" ? "Matching RAG vectors" : "Vector index ready",
+      label: simState === "analyzing" ? "Matching Vectors (0.94)" : "Vector RAG Index",
       isCurrent: simState === "analyzing",
       isPassed: ["policy", "rollback", "recovered"].includes(simState),
     },
@@ -63,7 +73,7 @@ export function HeroSection() {
       key: "policy",
       num: "03",
       name: "POLICY",
-      label: simState === "policy" ? "5/5 Gates evaluated" : "Deterministic gates",
+      label: simState === "policy" ? "5/5 Code Gates Pass" : "Deterministic Gates",
       isCurrent: simState === "policy",
       isPassed: ["rollback", "recovered"].includes(simState),
     },
@@ -71,7 +81,7 @@ export function HeroSection() {
       key: "rollback",
       num: "04",
       name: "ROLLBACK",
-      label: simState === "rollback" ? "Targeting v2.3.9" : "Cloud Deploy armed",
+      label: simState === "rollback" ? "Deploying v2.3.9" : "Cloud Deploy Armed",
       isCurrent: simState === "rollback",
       isPassed: ["recovered"].includes(simState),
     },
@@ -79,40 +89,79 @@ export function HeroSection() {
       key: "recovered",
       num: "05",
       name: "SRE DOC",
-      label: simState === "recovered" ? "Report synthesized" : "Markdown export",
+      label: simState === "recovered" ? "Synthesized in 38.4s" : "Markdown Postmortem",
       isCurrent: simState === "recovered",
       isPassed: false,
     },
   ];
 
   return (
-    <section className="relative pt-12 pb-16 px-4 lg:px-6 border-b border-border bg-transparent overflow-hidden">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        {/* Left Column: Hero Copy */}
-        <div className="lg:col-span-6 space-y-5">
-          {/* Element 1: Eyebrow */}
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 border border-border bg-muted/40 font-mono text-[11px] font-bold uppercase tracking-wider text-foreground">
+    <section className="relative min-h-[88vh] flex items-center pt-8 pb-16 px-4 lg:px-8 border-b border-border bg-transparent overflow-hidden">
+      {/* Hero Ambient Spotlight glow */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[550px] bg-foreground/[0.04] rounded-full blur-[150px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center relative z-10">
+        {/* Left Column: Monumental Headline & Value Prop */}
+        <div className="lg:col-span-6 space-y-6">
+          {/* Eyebrow Status Badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 border border-border bg-card/90 font-mono text-[11px] font-bold uppercase tracking-wider text-foreground">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <ShieldCheck className="w-4 h-4 text-foreground" />
             <span>Autonomous Release Governance</span>
+            <span className="text-muted-foreground">·</span>
+            <span className="text-muted-foreground">GCP Production Fleet</span>
           </div>
 
-          {/* Element 2: Headline */}
-          <h1 className="text-3xl sm:text-5xl font-mono font-bold tracking-tight text-foreground uppercase leading-[1.08]">
+          {/* Monumental Headline */}
+          <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-mono font-black tracking-tight text-foreground uppercase leading-[1.04]">
             Autonomous Safe-Deployment Fleet for Cloud Run & GKE
           </h1>
 
-          {/* Element 3: Subtext */}
-          <p className="text-sm sm:text-base text-muted-foreground font-sans leading-relaxed max-w-[55ch]">
-            Detect metric spikes in seconds. Enforce deterministic policy gates. Roll back broken releases before users notice.
+          {/* Subtext */}
+          <p className="text-base sm:text-lg text-foreground/80 font-sans leading-relaxed max-w-[54ch]">
+            Detect metric anomalies in sub-seconds. Enforce deterministic 5-rule safety gates. Roll back broken releases in 38.4s before users notice.
           </p>
 
-          {/* Element 4: CTAs */}
-          <div className="flex flex-wrap items-center gap-3 pt-2">
+          {/* Feature Highlights Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-xs font-mono">
+            <div className="p-2.5 border border-border bg-card/60 space-y-1">
+              <div className="flex items-center gap-1.5 text-foreground font-bold uppercase text-[11px]">
+                <Activity className="w-3.5 h-3.5 text-foreground shrink-0" />
+                <span>Sub-Second MTTR</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground font-sans">
+                38.4s average autonomous rollback loop.
+              </p>
+            </div>
+
+            <div className="p-2.5 border border-border bg-card/60 space-y-1">
+              <div className="flex items-center gap-1.5 text-foreground font-bold uppercase text-[11px]">
+                <Cpu className="w-3.5 h-3.5 text-foreground shrink-0" />
+                <span>Zero Hallucination</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground font-sans">
+                Deterministic code policy evaluation.
+              </p>
+            </div>
+
+            <div className="p-2.5 border border-border bg-card/60 space-y-1">
+              <div className="flex items-center gap-1.5 text-foreground font-bold uppercase text-[11px]">
+                <Lock className="w-3.5 h-3.5 text-foreground shrink-0" />
+                <span>Two-Tier IAM</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground font-sans">
+                Isolated Service Accounts & Model Armor.
+              </p>
+            </div>
+          </div>
+
+          {/* CTAs */}
+          <div className="flex flex-wrap items-center gap-3 pt-3">
             <Button
               variant="brutalistPrimary"
               size="lg"
               asChild
-              className="h-10 px-5 text-xs font-mono font-bold uppercase gap-2"
+              className="h-12 px-7 text-xs font-mono font-bold uppercase gap-2.5 shadow-xl"
             >
               <Link href="/dashboard">
                 <span>Launch Live Console</span>
@@ -124,25 +173,29 @@ export function HeroSection() {
               variant="outline"
               size="lg"
               onClick={runSimulation}
-              className="h-10 px-4 text-xs font-mono font-bold uppercase gap-2 border-border hover:border-foreground"
+              className="h-12 px-6 text-xs font-mono font-bold uppercase gap-2.5 border-2 border-border hover:border-foreground transition-all"
             >
-              <Play className="w-3.5 h-3.5 text-foreground" />
+              <Play className="w-4 h-4 text-foreground" />
               <span>Simulate Incident Rollback</span>
             </Button>
           </div>
         </div>
 
-        {/* Right Column: Interactive Fleet Pipeline Simulation Card */}
+        {/* Right Column: Hero Stage Terminal & Interactive Pipeline Cockpit */}
         <div className="lg:col-span-6">
-          <Card className="border-2 border-border p-5 space-y-4 shadow-xl">
-            {/* Terminal Top Bar */}
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-foreground" />
+          <Card className="border-2 border-foreground/30 p-6 space-y-5 shadow-2xl bg-card/90 backdrop-blur-md">
+            {/* Terminal Header */}
+            <div className="flex items-center justify-between border-b border-border pb-3.5">
+              <div className="flex items-center gap-2.5">
+                <Terminal className="w-4 h-4 text-foreground" />
                 <span className="font-mono font-bold text-xs uppercase tracking-tight text-foreground">
                   FLEET ORCHESTRATION PIPELINE
                 </span>
+                <Badge variant="brutalist" className="text-[9px] px-1 py-0">
+                  LIVE RECOVERY ENGINE
+                </Badge>
               </div>
+
               <div className="flex items-center gap-2 font-mono text-xs">
                 <span className="text-muted-foreground">MTTR:</span>
                 <span className="font-bold text-foreground bg-muted/60 px-2 py-0.5 border border-border">
@@ -151,19 +204,19 @@ export function HeroSection() {
               </div>
             </div>
 
-            {/* Main Simulation Body: Vertical Left Progress Bar + Right Telemetry */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-start">
-              {/* Left Column: Vertical Dot & Line Progress Steps */}
-              <div className="sm:col-span-5 space-y-0 font-mono text-xs relative pl-2">
+            {/* Main Stage Grid: Left Vertical Progress Stepper + Right Telemetry Telemetry */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-start">
+              {/* Left Column: Vertical Dot & Line Progress Bar */}
+              <div className="sm:col-span-5 space-y-0 font-mono text-xs relative pl-1">
                 {steps.map((step, idx) => {
                   const isLast = idx === steps.length - 1;
 
                   return (
                     <div key={step.name} className="relative flex items-start gap-2.5 pb-4 last:pb-0">
-                      {/* Vertical connecting line */}
+                      {/* Vertical line connecting dots */}
                       {!isLast && (
                         <div
-                          className={`absolute left-[5px] top-[14px] bottom-0 w-[1.5px] transition-colors ${
+                          className={`absolute left-[5px] top-[14px] bottom-0 w-[1.5px] transition-colors duration-300 ${
                             step.isPassed
                               ? "bg-foreground"
                               : "bg-border"
@@ -176,7 +229,7 @@ export function HeroSection() {
                         <div
                           className={`w-3 h-3 rounded-full border transition-all flex items-center justify-center ${
                             step.isCurrent
-                              ? "border-foreground bg-foreground shadow-sm scale-110"
+                              ? "border-foreground bg-foreground shadow-sm scale-125"
                               : step.isPassed
                               ? "border-foreground bg-foreground"
                               : "border-border bg-card"
@@ -193,7 +246,7 @@ export function HeroSection() {
                           <span
                             className={`font-bold uppercase tracking-tight text-xs ${
                               step.isCurrent
-                                ? "text-foreground underline underline-offset-2"
+                                ? "text-foreground underline underline-offset-2 font-black"
                                 : step.isPassed
                                 ? "text-foreground"
                                 : "text-muted-foreground"
@@ -202,7 +255,7 @@ export function HeroSection() {
                             {step.name}
                           </span>
                         </div>
-                        <div className="text-[10px] text-muted-foreground mt-0.5">
+                        <div className="text-[10px] text-muted-foreground mt-0.5 font-sans">
                           {step.label}
                         </div>
                       </div>
@@ -211,19 +264,20 @@ export function HeroSection() {
                 })}
               </div>
 
-              {/* Right Column: Live Telemetry Display & Actions */}
-              <div className="sm:col-span-7 space-y-3 font-mono">
-                <div className="p-3 border border-border bg-muted/20 space-y-2 text-xs">
+              {/* Right Column: Real-Time Telemetry Readout & Trigger */}
+              <div className="sm:col-span-7 space-y-3.5 font-mono">
+                <div className="p-3.5 border border-border bg-muted/20 space-y-2.5 text-xs">
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="text-muted-foreground">ACTIVE TARGET:</span>
                     <span className="font-bold text-foreground">checkout-service (v2.4.0)</span>
                   </div>
+
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="text-muted-foreground">HTTP ERROR RATE:</span>
                     <span
                       className={`font-bold ${
                         simState === "spike" || simState === "analyzing"
-                          ? "text-rose-600 dark:text-rose-400"
+                          ? "text-rose-600 dark:text-rose-400 font-black"
                           : "text-emerald-600 dark:text-emerald-400"
                       }`}
                     >
@@ -232,6 +286,7 @@ export function HeroSection() {
                         : "0.010 (Nominal)"}
                     </span>
                   </div>
+
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="text-muted-foreground">GOVERNANCE VERDICT:</span>
                     <span
@@ -253,18 +308,22 @@ export function HeroSection() {
                   </div>
                 </div>
 
-                {/* Controller Action */}
+                {/* Controller Action Button */}
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-muted-foreground uppercase">
-                    STAGE: {simState}
+                  <span className="text-[11px] text-muted-foreground uppercase font-mono">
+                    STAGE: <strong className="text-foreground">{simState}</strong>
                   </span>
-                  <button
+
+                  <Button
+                    size="sm"
+                    variant="brutalistPrimary"
+                    disabled={simState !== "nominal" && simState !== "recovered"}
                     onClick={runSimulation}
-                    className="flex items-center gap-1.5 px-3 py-1 text-xs font-mono border border-foreground bg-foreground text-background hover:bg-background hover:text-foreground transition-colors font-bold uppercase"
+                    className="h-8 px-3 text-xs font-mono font-bold uppercase gap-1.5"
                   >
-                    <RefreshCw className={`w-3 h-3 ${simState !== "nominal" && simState !== "recovered" ? "animate-spin" : ""}`} />
+                    <RefreshCw className={`w-3.5 h-3.5 ${simState !== "nominal" && simState !== "recovered" ? "animate-spin" : ""}`} />
                     <span>Run Simulation</span>
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
