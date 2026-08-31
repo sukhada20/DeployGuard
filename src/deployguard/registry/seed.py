@@ -1,6 +1,7 @@
 """Seed data for the Agent Registry — the 5 DeployGuard specialized agents."""
 
 from datetime import UTC, datetime
+
 from deployguard.registry.models import AgentRegistryEntry
 
 SEED_AGENTS: list[AgentRegistryEntry] = [
