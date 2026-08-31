@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import {
@@ -12,9 +12,10 @@ import {
   Database,
   Lock,
   RotateCcw,
-  ExternalLink,
 } from "lucide-react";
 import { DecisionTrace } from "@/types/api";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface DecisionTraceStepperProps {
   trace: DecisionTrace;
@@ -27,9 +28,9 @@ export const DecisionTraceStepper: React.FC<DecisionTraceStepperProps> = ({ trac
     () => {
       gsap.from(".step-card", {
         opacity: 0,
-        y: 20,
-        stagger: 0.15,
-        duration: 0.6,
+        y: 12,
+        stagger: 0.08,
+        duration: 0.4,
         ease: "power2.out",
       });
     },
@@ -39,121 +40,136 @@ export const DecisionTraceStepper: React.FC<DecisionTraceStepperProps> = ({ trac
   const steps = [
     {
       id: "evidence",
-      title: "1. Anomaly Evidence",
+      num: "01",
+      title: "Anomaly Evidence",
       icon: AlertTriangle,
       badge: "TRIGGER",
-      badgeColor: "bg-rose-500/20 text-rose-400 border-rose-500/30",
+      badgeVariant: "destructive" as const,
       content: trace.evidence_summary,
       status: "PASS",
     },
     {
       id: "memory",
-      title: "2. Historical Context",
+      num: "02",
+      title: "Historical Memory",
       icon: Database,
       badge: "VERTEX AI RAG",
-      badgeColor: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
-      content: "Incident Memory retrieved 3 prior analogous incidents (Cosine similarity: 0.94). Similar resolution: Rollback.",
+      badgeVariant: "info" as const,
+      content: "Incident Memory retrieved 3 prior analogous incidents (Cosine similarity: 0.94). Resolution: Rollback.",
       status: "PASS",
     },
     {
       id: "reasoning",
-      title: "3. Gemini 2.5 Flash",
+      num: "03",
+      title: "Gemini 2.5 Flash",
       icon: Brain,
-      badge: "MODEL ARMOR VERIFIED",
-      badgeColor: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
-      content: `LLM evaluated state and recommended: ${trace.decision.toUpperCase()} (Confidence: ${(trace.confidence * 100).toFixed(0)}%). Input screened for prompt injection.`,
+      badge: "MODEL ARMOR SCREENED",
+      badgeVariant: "indigo" as const,
+      content: `Evaluated telemetry state: ${trace.decision.toUpperCase()} (Confidence: ${(trace.confidence * 100).toFixed(0)}%). Input screened for prompt injection.`,
       status: "PASS",
     },
     {
       id: "policy",
-      title: "4. Policy Safety Gate",
+      num: "04",
+      title: "Policy Safety Gate",
       icon: ShieldCheck,
-      badge: trace.policy_passed ? "POLICY PASSED" : "POLICY BLOCKED",
-      badgeColor: trace.policy_passed ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-rose-500/20 text-rose-400 border-rose-500/30",
+      badge: trace.policy_passed ? "5/5 RULES PASSED" : "POLICY BLOCKED",
+      badgeVariant: trace.policy_passed ? "success" as const : "destructive" as const,
       content: trace.authorization_reason,
       checks: trace.policy_checks,
       status: trace.policy_passed ? "PASS" : "FAIL",
     },
     {
       id: "gateway",
-      title: "5. Gateway Authorization",
+      num: "05",
+      title: "Gateway Auth",
       icon: Lock,
       badge: trace.authorized ? "IAM AUTHORIZED" : "DENIED",
-      badgeColor: trace.authorized ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-rose-500/20 text-rose-400 border-rose-500/30",
-      content: "AgentGateway verified caller identity (decision-agent-sa@gcp). Authorized sensitive tool execution.",
+      badgeVariant: trace.authorized ? "success" as const : "destructive" as const,
+      content: "AgentGateway verified caller identity (decision-agent-sa@gcp). Authorized sensitive rollback execution tool.",
       status: trace.authorized ? "PASS" : "FAIL",
     },
     {
       id: "action",
-      title: "6. Autonomous Action",
+      num: "06",
+      title: "Autonomous Action",
       icon: RotateCcw,
       badge: trace.decision.toUpperCase(),
-      badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-      content: "Dispatched Cloud Deploy rollout execution to target stable release version.",
+      badgeVariant: "success" as const,
+      content: "Dispatched Cloud Deploy automated rollback execution to target stable release version.",
       status: "PASS",
     },
   ];
 
   return (
-    <div ref={containerRef} className="space-y-4">
+    <div ref={containerRef} className="space-y-3">
       {/* Header Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 rounded-xl border border-border bg-card/60">
+      <Card className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-border">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono text-muted-foreground">Trace ID:</span>
-            <span className="text-xs font-mono font-bold text-cyan-400">{trace.trace_id}</span>
+            <span className="text-[11px] font-mono text-muted-foreground">TRACE ID:</span>
+            <span className="text-xs font-mono font-bold text-foreground">{trace.trace_id}</span>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Service: <span className="text-foreground font-semibold">{trace.service_name}</span> | Decided: {new Date(trace.decided_at).toUTCString()}
+          <p className="text-[11px] text-muted-foreground font-mono mt-0.5">
+            SERVICE: <span className="text-foreground font-semibold">{trace.service_name}</span> | DECIDED: {new Date(trace.decided_at).toUTCString()}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono text-muted-foreground">Confidence:</span>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-xs font-bold">
-            <span>{(trace.confidence * 100).toFixed(0)}%</span>
-          </div>
+          <span className="text-[11px] font-mono text-muted-foreground">CONFIDENCE:</span>
+          <Badge variant="success" className="font-mono text-xs px-2 py-0.5">
+            {(trace.confidence * 100).toFixed(0)}%
+          </Badge>
         </div>
-      </div>
+      </Card>
 
       {/* Governance Pipeline Stepper Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {steps.map((step) => {
           const Icon = step.icon;
           const isSuccess = step.status === "PASS";
 
           return (
-            <div
+            <Card
               key={step.id}
-              className="step-card p-4 rounded-xl border border-border bg-card/80 flex flex-col justify-between space-y-3 relative overflow-hidden"
+              className="step-card p-3.5 flex flex-col justify-between space-y-3 border-border hover:border-foreground/50 transition-colors"
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-muted border border-border">
-                      <Icon className="w-4 h-4 text-cyan-400" />
+                    <span className="font-mono text-xs font-bold text-muted-foreground">[{step.num}]</span>
+                    <div className="p-1 border border-border bg-muted/40">
+                      <Icon className="w-3.5 h-3.5 text-foreground" />
                     </div>
-                    <h4 className="text-xs font-semibold font-mono text-foreground">{step.title}</h4>
+                    <h4 className="text-xs font-bold font-mono text-foreground uppercase tracking-tight">
+                      {step.title}
+                    </h4>
                   </div>
                   {isSuccess ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   ) : (
-                    <XCircle className="w-4 h-4 text-rose-400" />
+                    <XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                   )}
                 </div>
 
-                <div className="inline-block text-[10px] font-mono uppercase px-2 py-0.5 rounded-full border mb-2.5 font-bold">
-                  <span className={step.badgeColor}>{step.badge}</span>
+                <div className="mb-2">
+                  <Badge variant={step.badgeVariant} className="text-[9px] px-1.5 py-0">
+                    {step.badge}
+                  </Badge>
                 </div>
 
-                <p className="text-xs text-muted-foreground leading-relaxed">{step.content}</p>
+                <p className="text-xs text-foreground/80 font-sans leading-relaxed">{step.content}</p>
 
-                {/* Sub-checks if present */}
+                {/* Policy Sub-checks Table */}
                 {step.checks && (
-                  <div className="mt-3 pt-2.5 border-t border-border/60 space-y-1.5">
+                  <div className="mt-2.5 pt-2 border-t border-border/60 space-y-1">
                     {Object.entries(step.checks).map(([checkName, passed]) => (
-                      <div key={checkName} className="flex items-center justify-between text-[11px] font-mono">
-                        <span className="text-muted-foreground">{checkName.replace(/_/g, " ")}</span>
-                        <span className={passed ? "text-emerald-400 font-semibold" : "text-rose-400 font-semibold"}>
+                      <div key={checkName} className="flex items-center justify-between text-[10px] font-mono">
+                        <span className="text-muted-foreground uppercase">{checkName.replace(/_/g, " ")}</span>
+                        <span
+                          className={`font-bold ${
+                            passed ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+                          }`}
+                        >
                           {passed ? "PASS" : "FAIL"}
                         </span>
                       </div>
@@ -161,7 +177,7 @@ export const DecisionTraceStepper: React.FC<DecisionTraceStepperProps> = ({ trac
                   </div>
                 )}
               </div>
-            </div>
+            </Card>
           );
         })}
       </div>

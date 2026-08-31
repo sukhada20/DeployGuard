@@ -3,6 +3,8 @@
 import React from "react";
 import { Layers, ExternalLink } from "lucide-react";
 import { TraceSpan } from "@/types/api";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface SpanWaterfallProps {
   traceId: string;
@@ -22,27 +24,33 @@ export const SpanWaterfall: React.FC<SpanWaterfallProps> = ({ traceId, spans = D
   const totalDuration = Math.max(...spans.map((s) => s.start_offset_ms + s.duration_ms), 40000);
 
   return (
-    <div className="p-4 rounded-xl border border-border bg-card/60 space-y-4">
-      <div className="flex items-center justify-between">
+    <Card className="border-border">
+      <div className="p-3.5 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Layers className="w-4 h-4 text-indigo-400" />
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">
+          <Layers className="w-4 h-4 text-foreground" />
+          <h3 className="text-xs font-bold uppercase tracking-wider text-foreground font-mono">
             OpenTelemetry Distributed Span Waterfall
           </h3>
         </div>
-        <a
-          href={`https://console.cloud.google.com/traces/list?project=deployguard-fleet&tid=${traceId}`}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-1 text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
+        <Button
+          variant="outline"
+          size="sm"
+          asChild
+          className="h-7 text-[11px] font-mono gap-1 border-border hover:border-foreground"
         >
-          <span>Cloud Trace Console</span>
-          <ExternalLink className="w-3 h-3" />
-        </a>
+          <a
+            href={`https://console.cloud.google.com/traces/list?project=deployguard-fleet&tid=${traceId}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <span>Cloud Trace Console</span>
+            <ExternalLink className="w-3 h-3 ml-1" />
+          </a>
+        </Button>
       </div>
 
       {/* Waterfall Rows */}
-      <div className="space-y-2.5 pt-2">
+      <div className="p-4 space-y-3">
         {spans.map((span, idx) => {
           const leftPercent = (span.start_offset_ms / totalDuration) * 100;
           const widthPercent = Math.max(3, (span.duration_ms / totalDuration) * 100);
@@ -50,22 +58,22 @@ export const SpanWaterfall: React.FC<SpanWaterfallProps> = ({ traceId, spans = D
           return (
             <div key={idx} className="space-y-1">
               <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
-                <span className="text-foreground font-semibold">{span.name}</span>
+                <span className="text-foreground font-bold">{span.name}</span>
                 <span>{span.duration_ms}ms</span>
               </div>
-              <div className="w-full h-3 bg-muted/40 rounded-full overflow-hidden relative">
+              <div className="w-full h-3 bg-muted/40 border border-border/60 overflow-hidden relative">
                 <div
                   style={{
                     marginLeft: `${leftPercent}%`,
                     width: `${widthPercent}%`,
                   }}
-                  className="h-full bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full shadow-sm"
+                  className="h-full bg-foreground border-r border-background"
                 />
               </div>
             </div>
           );
         })}
       </div>
-    </div>
+    </Card>
   );
 };

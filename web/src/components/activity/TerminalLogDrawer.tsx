@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { Terminal, X, Copy, Check } from "lucide-react";
+import { Terminal, Copy, Check, X } from "lucide-react";
 import { AgentEventMessage } from "@/types/api";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface TerminalLogDrawerProps {
   isOpen: boolean;
@@ -13,8 +15,6 @@ interface TerminalLogDrawerProps {
 export const TerminalLogDrawer: React.FC<TerminalLogDrawerProps> = ({ isOpen, onClose, events }) => {
   const [copied, setCopied] = useState(false);
 
-  if (!isOpen) return null;
-
   const rawLogs = events.map((e) => `[${e.timestamp}] [${e.event}] ${JSON.stringify(e.data, null, 2)}`).join("\n\n");
 
   const handleCopy = () => {
@@ -24,49 +24,50 @@ export const TerminalLogDrawer: React.FC<TerminalLogDrawerProps> = ({ isOpen, on
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl max-h-[85vh] rounded-xl border border-border bg-[#0a0d14] shadow-2xl flex flex-col overflow-hidden">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-4xl max-h-[85vh] p-0 gap-0 border-border bg-card overflow-hidden">
         {/* Terminal Header */}
-        <div className="px-4 py-3 border-b border-border/80 bg-[#121620] flex items-center justify-between">
-          <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-            <Terminal className="w-4 h-4 text-cyan-400" />
-            <span>DeployGuard Real-Time SSE Event Stream & Trace Terminal</span>
+        <DialogHeader className="px-4 py-3 border-b border-border bg-muted/40 flex-row items-center justify-between space-y-0">
+          <div className="flex items-center gap-2 font-mono text-xs text-foreground font-bold uppercase">
+            <Terminal className="w-4 h-4 text-foreground" />
+            <DialogTitle className="text-xs font-mono font-bold">
+              Real-Time SSE Event Stream & Raw Telemetry Terminal
+            </DialogTitle>
           </div>
-          <div className="flex items-center gap-2">
-            <button
+          <div className="flex items-center gap-2 pr-8">
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleCopy}
-              className="flex items-center gap-1 px-2.5 py-1 text-xs font-mono rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition-colors"
+              className="h-7 text-[11px] font-mono gap-1 border-border hover:border-foreground"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
               <span>{copied ? "Copied" : "Copy Logs"}</span>
-            </button>
-            <button
-              onClick={onClose}
-              className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
-        </div>
+        </DialogHeader>
 
         {/* Terminal Body */}
-        <div className="p-4 overflow-y-auto font-mono text-xs text-emerald-400 space-y-3 terminal-scroll bg-[#06080d]">
+        <div className="p-4 overflow-y-auto max-h-[70vh] font-mono text-xs space-y-3 bg-card terminal-scroll">
           {events.length === 0 ? (
-            <div className="text-muted-foreground">Waiting for SSE events... stream is open and listening.</div>
+            <div className="text-muted-foreground text-center py-8">
+              [WAITING FOR SSE EVENT FRAMES: LISTENING ON /api/v1/events/stream]
+            </div>
           ) : (
             events.map((evt, idx) => (
-              <div key={idx} className="border-b border-border/20 pb-2">
-                <div className="text-cyan-400 font-bold">
-                  [{evt.timestamp}] EVENT: {evt.event}
+              <div key={idx} className="border-b border-border/40 pb-2.5 space-y-1">
+                <div className="flex items-center justify-between text-[11px] text-foreground font-bold">
+                  <span>[{evt.timestamp || "STREAM_EVENT"}] {evt.event}</span>
+                  <span className="text-muted-foreground text-[10px] uppercase font-mono">FRAME #{idx + 1}</span>
                 </div>
-                <pre className="text-muted-foreground mt-1 whitespace-pre-wrap text-[11px]">
+                <pre className="text-muted-foreground whitespace-pre-wrap text-[11px] bg-muted/30 p-2 border border-border/40 overflow-x-auto">
                   {JSON.stringify(evt.data, null, 2)}
                 </pre>
               </div>
             ))
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };

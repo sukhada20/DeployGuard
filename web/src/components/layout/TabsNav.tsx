@@ -12,28 +12,28 @@ interface TabsNavProps {
 
 export const TabsNav: React.FC<TabsNavProps> = ({ activeTab, onTabChange }) => {
   const tabs: { key: TabKey; label: string; icon: React.FC<{ className?: string }> }[] = [
-    { key: "operations", label: "Live Operations & Telemetry", icon: Activity },
-    { key: "traces", label: "Incidents & Decision Traces", icon: GitMerge },
-    { key: "postmortems", label: "Postmortem Reports", icon: FileText },
-    { key: "registry", label: "Agent Fleet Registry", icon: Users },
+    { key: "operations", label: "01. Live Operations & Telemetry", icon: Activity },
+    { key: "traces", label: "02. Incident & Decision Traces", icon: GitMerge },
+    { key: "postmortems", label: "03. Postmortem SRE Reports", icon: FileText },
+    { key: "registry", label: "04. Agent Fleet Registry", icon: Users },
   ];
 
   return (
-    <div className="border-b border-border bg-card/40 px-6">
-      <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto py-2">
+    <div className="border-b border-border bg-card/60 px-4 lg:px-6">
+      <div className="max-w-7xl mx-auto flex items-center gap-1.5 overflow-x-auto py-2">
         {tabs.map(({ key, label, icon: Icon }) => {
           const isActive = activeTab === key;
           return (
             <button
               key={key}
               onClick={() => onTabChange(key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200 whitespace-nowrap ${
+              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-mono transition-all select-none border whitespace-nowrap ${
                 isActive
-                  ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20 font-semibold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  ? "border-foreground bg-foreground text-background font-bold shadow-none"
+                  : "border-border/60 bg-muted/20 text-foreground/90 hover:text-foreground hover:border-foreground hover:bg-muted/50 font-medium"
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? "text-primary-foreground" : "text-muted-foreground"}`} />
+              <Icon className="w-3.5 h-3.5" />
               <span>{label}</span>
             </button>
           );

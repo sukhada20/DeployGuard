@@ -1,8 +1,12 @@
 "use client";
 
 import React from "react";
-import { Bot, Terminal, Shield, Brain, RotateCcw, FileText, CheckCircle } from "lucide-react";
+import { Bot, Terminal, Shield, Brain, RotateCcw, FileText } from "lucide-react";
 import { AgentEventMessage } from "@/types/api";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface AgentActivityFeedProps {
   events: AgentEventMessage[];
@@ -13,45 +17,44 @@ const getAgentIcon = (role?: string) => {
   switch (role) {
     case "monitor":
     case "deploy_monitor_agent":
-      return <Shield className="w-4 h-4 text-cyan-400" />;
+      return <Shield className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />;
     case "decision":
     case "decision_agent":
-      return <Brain className="w-4 h-4 text-amber-400" />;
+      return <Brain className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />;
     case "rollback":
     case "rollback_agent":
-      return <RotateCcw className="w-4 h-4 text-rose-400" />;
+      return <RotateCcw className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />;
     case "postmortem":
     case "postmortem_agent":
-      return <FileText className="w-4 h-4 text-emerald-400" />;
+      return <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />;
     default:
-      return <Bot className="w-4 h-4 text-primary" />;
+      return <Bot className="w-3.5 h-3.5 text-foreground" />;
   }
 };
 
-const getRoleBadgeClass = (role?: string) => {
+const getRoleBadgeVariant = (role?: string): "info" | "warning" | "destructive" | "success" | "secondary" => {
   switch (role) {
     case "monitor":
     case "deploy_monitor_agent":
-      return "bg-cyan-500/10 text-cyan-400 border-cyan-500/20";
+      return "info";
     case "decision":
     case "decision_agent":
-      return "bg-amber-500/10 text-amber-400 border-amber-500/20";
+      return "warning";
     case "rollback":
     case "rollback_agent":
-      return "bg-rose-500/10 text-rose-400 border-rose-500/20";
+      return "destructive";
     case "postmortem":
     case "postmortem_agent":
-      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+      return "success";
     default:
-      return "bg-primary/10 text-primary border-primary/20";
+      return "secondary";
   }
 };
 
-// Default seed events when SSE is quiet
 const DEFAULT_SAMPLE_EVENTS: AgentEventMessage[] = [
   {
     event: "postmortem_ready",
-    timestamp: "13:45:08Z",
+    timestamp: "2026-08-31T13:45:08Z",
     data: {
       role: "postmortem_agent",
       action: "REPORT_SYNTHESIZED",
@@ -61,7 +64,7 @@ const DEFAULT_SAMPLE_EVENTS: AgentEventMessage[] = [
   },
   {
     event: "recovery_event",
-    timestamp: "13:45:06Z",
+    timestamp: "2026-08-31T13:45:06Z",
     data: {
       role: "deploy_monitor_agent",
       action: "RECOVERY_VERIFIED",
@@ -71,7 +74,7 @@ const DEFAULT_SAMPLE_EVENTS: AgentEventMessage[] = [
   },
   {
     event: "rollback_event",
-    timestamp: "13:44:48Z",
+    timestamp: "2026-08-31T13:44:48Z",
     data: {
       role: "rollback_agent",
       action: "ROLLOUT_EXECUTED",
@@ -81,7 +84,7 @@ const DEFAULT_SAMPLE_EVENTS: AgentEventMessage[] = [
   },
   {
     event: "decision_event",
-    timestamp: "13:44:34Z",
+    timestamp: "2026-08-31T13:44:34Z",
     data: {
       role: "decision_agent",
       action: "POLICY_AUTHORIZED",
@@ -91,7 +94,7 @@ const DEFAULT_SAMPLE_EVENTS: AgentEventMessage[] = [
   },
   {
     event: "anomaly_alert",
-    timestamp: "13:44:32Z",
+    timestamp: "2026-08-31T13:44:32Z",
     data: {
       role: "deploy_monitor_agent",
       action: "ANOMALY_DETECTED",
@@ -105,58 +108,58 @@ export const AgentActivityFeed: React.FC<AgentActivityFeedProps> = ({ events, on
   const displayEvents = events.length > 0 ? events : DEFAULT_SAMPLE_EVENTS;
 
   return (
-    <div className="rounded-xl border border-border bg-card/60 flex flex-col h-full">
-      {/* Feed Header */}
-      <div className="p-4 border-b border-border flex items-center justify-between">
+    <Card className="flex flex-col h-full border-border">
+      {/* Header */}
+      <div className="p-3.5 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Bot className="w-4 h-4 text-cyan-400" />
-          <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground font-mono">
+          <Bot className="w-4 h-4 text-foreground" />
+          <h3 className="font-mono font-bold text-xs uppercase tracking-wider text-foreground">
             Autonomous Fleet Activity Stream
           </h3>
         </div>
-        <button
+        <Button
+          variant="outline"
+          size="sm"
           onClick={onOpenTerminal}
-          className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition-colors"
+          className="h-7 text-[11px] gap-1.5 font-mono border-border hover:border-foreground"
         >
-          <Terminal className="w-3.5 h-3.5" />
-          <span>Raw Terminal Log</span>
-        </button>
+          <Terminal className="w-3 h-3" />
+          <span>Raw SSE Terminal</span>
+        </Button>
       </div>
 
       {/* Events List */}
-      <div className="p-4 space-y-3 overflow-y-auto max-h-[500px]">
+      <div className="p-3 space-y-2.5 overflow-y-auto max-h-[520px]">
         {displayEvents.map((evt, idx) => {
           const role = evt.data?.role || "system";
           const action = evt.data?.action || evt.event;
           const msg = evt.data?.message || JSON.stringify(evt.data);
           const thinking = evt.data?.thinking;
-          const time = evt.timestamp ? new Date(evt.timestamp).toLocaleTimeString() : "just now";
+          const time = evt.timestamp ? new Date(evt.timestamp).toLocaleTimeString() : "JUST NOW";
 
           return (
             <div
               key={idx}
-              className="p-3.5 rounded-lg border border-border/70 bg-background/50 hover:bg-background/80 transition-colors space-y-2"
+              className="p-3 border border-border bg-card/60 hover:bg-muted/30 transition-colors space-y-2"
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="p-1 rounded bg-muted/60 border border-border">
-                    {getAgentIcon(role)}
-                  </div>
-                  <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full border ${getRoleBadgeClass(role)}`}>
+                  {getAgentIcon(role)}
+                  <Badge variant={getRoleBadgeVariant(role)} className="text-[9px] px-1.5 py-0">
                     {role}
-                  </span>
-                  <span className="text-xs font-mono font-semibold text-foreground uppercase tracking-tight">
+                  </Badge>
+                  <span className="text-[11px] font-mono font-bold text-foreground uppercase tracking-tight">
                     {action}
                   </span>
                 </div>
-                <span className="text-[11px] font-mono text-muted-foreground">{time}</span>
+                <span className="text-[10px] font-mono text-muted-foreground">{time}</span>
               </div>
 
-              <p className="text-xs text-foreground/90 leading-relaxed font-sans">{msg}</p>
+              <p className="text-xs text-foreground/90 font-sans leading-relaxed">{msg}</p>
 
               {thinking && (
-                <div className="p-2 rounded bg-muted/30 border border-border/40 text-[11px] font-mono text-cyan-300/90 flex items-start gap-1.5">
-                  <span className="text-muted-foreground font-bold shrink-0">Reasoning:</span>
+                <div className="p-2 border-l-2 border-foreground/70 bg-muted/40 text-[11px] font-mono text-foreground/80 flex items-start gap-1.5">
+                  <span className="text-muted-foreground font-bold shrink-0">REASONING:</span>
                   <span>{thinking}</span>
                 </div>
               )}
@@ -164,6 +167,6 @@ export const AgentActivityFeed: React.FC<AgentActivityFeedProps> = ({ events, on
           );
         })}
       </div>
-    </div>
+    </Card>
   );
 };

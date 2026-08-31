@@ -3,6 +3,16 @@
 import React from "react";
 import { Shield, Brain, RotateCcw, FileText, Database, Lock, Key, ShieldCheck, Cpu } from "lucide-react";
 import { AgentRegistryModel } from "@/types/api";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 
 interface FleetRegistryViewProps {
   agents?: AgentRegistryModel[];
@@ -96,27 +106,21 @@ function getAgentIcon(agentId: string) {
   return Cpu;
 }
 
-function getRiskBadge(risk: string) {
+function getRiskVariant(risk: string): "destructive" | "warning" | "info" | "success" {
   const r = (risk || "LOW").toUpperCase();
-  if (r === "CRITICAL") {
-    return "bg-rose-500/20 text-rose-400 border-rose-500/30";
-  }
-  if (r === "HIGH") {
-    return "bg-amber-500/20 text-amber-400 border-amber-500/30";
-  }
-  if (r === "MEDIUM") {
-    return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
-  }
-  return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
+  if (r === "CRITICAL") return "destructive";
+  if (r === "HIGH") return "warning";
+  if (r === "MEDIUM") return "info";
+  return "success";
 }
 
 export const FleetRegistryView: React.FC<FleetRegistryViewProps> = ({ agents }) => {
   const agentList = agents && agents.length > 0 ? agents : DEFAULT_AGENTS;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {agentList.map((agent) => {
           const Icon = getAgentIcon(agent.agent_id);
           const tools = Array.isArray(agent.tools) && agent.tools.length > 0 ? agent.tools : [];
@@ -125,128 +129,128 @@ export const FleetRegistryView: React.FC<FleetRegistryViewProps> = ({ agents }) 
           const status = (agent.status || "ACTIVE").toUpperCase();
 
           return (
-            <div
+            <Card
               key={agent.agent_id}
-              className="p-4 rounded-xl border border-border bg-card/80 space-y-3 relative overflow-hidden transition-all hover:border-cyan-500/40"
+              className="p-3.5 flex flex-col justify-between space-y-3 border-border hover:border-foreground/50 transition-colors"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-muted/60 border border-border">
-                    <Icon className="w-4 h-4 text-cyan-400" />
+              <div>
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <Icon className="w-4 h-4 text-foreground shrink-0" />
+                    <div>
+                      <h4 className="font-bold text-xs text-foreground font-mono leading-tight">{agent.name}</h4>
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        v{agent.version || "1.0.0"} · {agent.owner || "DeployGuard"}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-foreground font-mono leading-tight">{agent.name}</h4>
-                    <span className="text-[10px] text-muted-foreground font-mono">v{agent.version || "1.0.0"} · {agent.owner || "DeployGuard"}</span>
+                  <div className="flex flex-col items-end gap-1">
+                    <Badge variant={getRiskVariant(agent.risk_level)} className="text-[9px] px-1.5 py-0">
+                      RISK: {agent.risk_level}
+                    </Badge>
+                    <div className="flex items-center gap-1 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                      <span className="w-1.5 h-1.5 bg-emerald-500" />
+                      <span>{status}</span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full uppercase border font-bold ${getRiskBadge(agent.risk_level)}`}>
-                    Risk: {agent.risk_level}
-                  </span>
-                  <div className="flex items-center gap-1 text-[10px] font-mono text-emerald-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>{status}</span>
-                  </div>
-                </div>
+
+                <p className="text-xs text-foreground/80 font-sans leading-relaxed">
+                  {agent.description || agent.domain}
+                </p>
               </div>
 
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {agent.description || agent.domain}
-              </p>
-
-              <div className="space-y-1.5 text-xs font-mono text-muted-foreground pt-2.5 border-t border-border/60">
-                <div className="flex items-center gap-1.5 text-[11px]">
-                  <Key className="w-3 h-3 text-cyan-400 shrink-0" />
-                  <span className="truncate text-foreground/80">{serviceAccount}</span>
+              <div className="space-y-1 text-xs font-mono text-muted-foreground pt-2.5 border-t border-border/60">
+                <div className="flex items-center gap-1.5 text-[10px]">
+                  <Key className="w-3 h-3 text-foreground shrink-0" />
+                  <span className="truncate text-foreground/90">{serviceAccount}</span>
                 </div>
-                <div className="flex items-start gap-1.5 text-[11px]">
-                  <Lock className="w-3 h-3 text-indigo-400 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-1.5 text-[10px]">
+                  <Lock className="w-3 h-3 text-foreground shrink-0 mt-0.5" />
                   <span className="text-muted-foreground">
-                    <strong className="text-foreground/80">Tools:</strong> {tools.length > 0 ? tools.join(", ") : "Standard ADK Tools"}
+                    <strong className="text-foreground">Tools:</strong> {tools.length > 0 ? tools.join(", ") : "Standard ADK"}
                   </span>
                 </div>
                 {permissions.length > 0 && (
-                  <div className="flex items-start gap-1.5 text-[11px]">
-                    <ShieldCheck className="w-3 h-3 text-emerald-400 shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-1.5 text-[10px]">
+                    <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                     <span className="text-muted-foreground">
-                      <strong className="text-foreground/80">IAM:</strong> {permissions.join(", ")}
+                      <strong className="text-foreground">IAM:</strong> {permissions.join(", ")}
                     </span>
                   </div>
                 )}
               </div>
-            </div>
+            </Card>
           );
         })}
       </div>
 
       {/* IAM Capability Matrix */}
-      <div className="p-4 rounded-xl border border-border bg-card/60 space-y-3">
+      <Card className="border-border space-y-3 p-4">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
             GCP IAM & Agent Gateway Capability Matrix
           </h3>
-          <span className="text-[10px] font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded">
-            Enforced by Two-Tier Gateway
-          </span>
+          <Badge variant="brutalist" className="text-[10px]">
+            ENFORCED BY TWO-TIER GATEWAY
+          </Badge>
         </div>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full text-left text-xs font-mono">
-            <thead className="bg-muted/60 text-muted-foreground border-b border-border">
-              <tr>
-                <th className="p-2.5">Agent Role</th>
-                <th className="p-2.5">GCP Service Account</th>
-                <th className="p-2.5">Cloud Monitoring</th>
-                <th className="p-2.5">Cloud Deploy</th>
-                <th className="p-2.5">Vertex AI</th>
-                <th className="p-2.5">Firestore</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/60 bg-background/40">
-              <tr>
-                <td className="p-2.5 font-semibold text-foreground">Deploy Monitor</td>
-                <td className="p-2.5 text-muted-foreground">deploy-monitor-sa</td>
-                <td className="p-2.5 text-emerald-400 font-bold">READ</td>
-                <td className="p-2.5 text-muted-foreground">NONE</td>
-                <td className="p-2.5 text-muted-foreground">NONE</td>
-                <td className="p-2.5 text-muted-foreground">NONE</td>
-              </tr>
-              <tr>
-                <td className="p-2.5 font-semibold text-foreground">Decision Agent</td>
-                <td className="p-2.5 text-muted-foreground">decision-agent-sa</td>
-                <td className="p-2.5 text-muted-foreground">NONE</td>
-                <td className="p-2.5 text-muted-foreground">NONE</td>
-                <td className="p-2.5 text-emerald-400 font-bold">INFER</td>
-                <td className="p-2.5 text-emerald-400 font-bold">READ</td>
-              </tr>
-              <tr>
-                <td className="p-2.5 font-semibold text-foreground">Incident Memory</td>
-                <td className="p-2.5 text-muted-foreground">incident-memory-sa</td>
-                <td className="p-2.5 text-muted-foreground">NONE</td>
-                <td className="p-2.5 text-muted-foreground">NONE</td>
-                <td className="p-2.5 text-emerald-400 font-bold">EMBED</td>
-                <td className="p-2.5 text-emerald-400 font-bold">READ/WRITE</td>
-              </tr>
-              <tr>
-                <td className="p-2.5 font-semibold text-foreground">Rollback Agent</td>
-                <td className="p-2.5 text-muted-foreground">rollback-agent-sa</td>
-                <td className="p-2.5 text-muted-foreground">NONE</td>
-                <td className="p-2.5 text-rose-400 font-bold">EXECUTE</td>
-                <td className="p-2.5 text-muted-foreground">NONE</td>
-                <td className="p-2.5 text-muted-foreground">NONE</td>
-              </tr>
-              <tr>
-                <td className="p-2.5 font-semibold text-foreground">Postmortem Agent</td>
-                <td className="p-2.5 text-muted-foreground">postmortem-agent-sa</td>
-                <td className="p-2.5 text-muted-foreground">NONE</td>
-                <td className="p-2.5 text-muted-foreground">NONE</td>
-                <td className="p-2.5 text-emerald-400 font-bold">INFER</td>
-                <td className="p-2.5 text-emerald-400 font-bold">READ/WRITE</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Agent Role</TableHead>
+              <TableHead>GCP Service Account</TableHead>
+              <TableHead>Cloud Monitoring</TableHead>
+              <TableHead>Cloud Deploy</TableHead>
+              <TableHead>Vertex AI</TableHead>
+              <TableHead>Firestore</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell className="font-bold text-foreground">Deploy Monitor</TableCell>
+              <TableCell className="text-muted-foreground">deploy-monitor-sa</TableCell>
+              <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">READ</TableCell>
+              <TableCell className="text-muted-foreground">NONE</TableCell>
+              <TableCell className="text-muted-foreground">NONE</TableCell>
+              <TableCell className="text-muted-foreground">NONE</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-bold text-foreground">Decision Agent</TableCell>
+              <TableCell className="text-muted-foreground">decision-agent-sa</TableCell>
+              <TableCell className="text-muted-foreground">NONE</TableCell>
+              <TableCell className="text-muted-foreground">NONE</TableCell>
+              <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">INFER</TableCell>
+              <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">READ</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-bold text-foreground">Incident Memory</TableCell>
+              <TableCell className="text-muted-foreground">incident-memory-sa</TableCell>
+              <TableCell className="text-muted-foreground">NONE</TableCell>
+              <TableCell className="text-muted-foreground">NONE</TableCell>
+              <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">EMBED</TableCell>
+              <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">READ/WRITE</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-bold text-foreground">Rollback Agent</TableCell>
+              <TableCell className="text-muted-foreground">rollback-agent-sa</TableCell>
+              <TableCell className="text-muted-foreground">NONE</TableCell>
+              <TableCell className="text-rose-600 dark:text-rose-400 font-bold">EXECUTE</TableCell>
+              <TableCell className="text-muted-foreground">NONE</TableCell>
+              <TableCell className="text-muted-foreground">NONE</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-bold text-foreground">Postmortem Agent</TableCell>
+              <TableCell className="text-muted-foreground">postmortem-agent-sa</TableCell>
+              <TableCell className="text-muted-foreground">NONE</TableCell>
+              <TableCell className="text-muted-foreground">NONE</TableCell>
+              <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">INFER</TableCell>
+              <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">READ/WRITE</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </Card>
     </div>
   );
 };
-
