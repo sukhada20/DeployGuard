@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "@/components/theme-provider";
+import { AgenticBackground } from "@/components/ui/AgenticBackground";
 import "./globals.css";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -18,15 +20,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   );
 
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <title>DeployGuard — Autonomous Safe-Deployment Fleet & SRE Dashboard</title>
-        <meta name="description" content="Fortified enterprise fleet for autonomous governed safe deployments on GCP" />
+        <title>DeployGuard: Autonomous Governed Safe-Deployment Fleet</title>
+        <meta name="description" content="Autonomous governed safe-deployment fleet for Cloud Run and GKE" />
       </head>
-      <body className="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-cyan-500 selection:text-slate-950">
-        <QueryClientProvider client={queryClient}>
-          {children}
-        </QueryClientProvider>
+      <body className="min-h-screen bg-background text-foreground font-sans antialiased relative">
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <QueryClientProvider client={queryClient}>
+            <AgenticBackground />
+            <div className="relative z-10">
+              {children}
+            </div>
+          </QueryClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
