@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 
-interface Particle {
+interface Node {
   x: number;
   y: number;
   vx: number;
@@ -12,9 +12,9 @@ interface Particle {
   label?: string;
 }
 
-interface StreamPacket {
-  sourceIndex: number;
-  targetIndex: number;
+interface Packet {
+  fromIndex: number;
+  toIndex: number;
   progress: number;
   speed: number;
 }
@@ -22,10 +22,10 @@ interface StreamPacket {
 export function AgenticBackground() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseRef = useRef({ x: -1000, y: -1000, targetX: -1000, targetY: -1000, active: false });
-  const [isClient, setIsClient] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    setMounted(true);
 
     const onMouseMove = (e: MouseEvent) => {
       mouseRef.current.targetX = e.clientX;
@@ -43,6 +43,7 @@ export function AgenticBackground() {
 
     window.addEventListener("mousemove", onMouseMove, { passive: true });
     window.addEventListener("mouseleave", onMouseLeave);
+
     return () => {
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseleave", onMouseLeave);
@@ -50,21 +51,23 @@ export function AgenticBackground() {
   }, []);
 
   useEffect(() => {
-    if (!isClient) return;
+    if (!mounted) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
+    let isRunning = true;
     let animId: number;
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
+
+    let width = (canvas.width = window.innerWidth || 1200);
+    let height = (canvas.height = window.innerHeight || 800);
 
     const handleResize = () => {
-      if (!canvas) return;
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      if (!canvas || !isRunning) return;
+      width = canvas.width = window.innerWidth || 1200;
+      height = canvas.height = window.innerHeight || 800;
     };
 
     window.addEventListener("resize", handleResize);
@@ -84,138 +87,139 @@ export function AgenticBackground() {
       "postmortem:generator_ready",
     ];
 
-    // Initialize Particles (30 to 45 nodes)
-    const count = Math.max(28, Math.min(48, Math.floor((width * height) / 22000)));
-    const particles: Particle[] = Array.from({ length: count }, (_, i) => ({
+    // Initialize 32 to 48 Agent Nodes
+    const nodeCount = Math.max(30, Math.min(50, Math.floor((width * height) / 22000)));
+    const nodes: Node[] = Array.from({ length: nodeCount }, (_, i) => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      size: Math.random() > 0.6 ? 5 : 3.5,
+      vx: (Math.random() - 0.5) * 0.45,
+      vy: (Math.random() - 0.5) * 0.45,
+      size: Math.random() > 0.55 ? 5 : 3.5,
       pulse: Math.random() * Math.PI * 2,
       label: i < LABELS.length ? LABELS[i] : undefined,
     }));
 
-    const packets: StreamPacket[] = [];
+    const packets: Packet[] = [];
     const maxPackets = 16;
     let time = 0;
-    let scanlineY = 0;
+    let scanY = 0;
 
-    const draw = () => {
+    const loop = () => {
+      if (!isRunning) return;
+
       time += 0.02;
       ctx.clearRect(0, 0, width, height);
 
       const isDark = document.documentElement.classList.contains("dark");
 
-      // Smooth mouse lerp
+      // Smooth cursor interpolation
       const mouse = mouseRef.current;
       if (mouse.active) {
-        mouse.x += (mouse.targetX - mouse.x) * 0.05;
-        mouse.y += (mouse.targetY - mouse.y) * 0.05;
+        mouse.x += (mouse.targetX - mouse.x) * 0.08;
+        mouse.y += (mouse.targetY - mouse.y) * 0.08;
       }
 
       // 1. Moving Telemetry Scanline
-      scanlineY = (scanlineY + 0.75) % height;
-      const scanGrad = ctx.createLinearGradient(0, scanlineY - 20, 0, scanlineY + 20);
+      scanY = (scanY + 0.8) % height;
+      const scanGrad = ctx.createLinearGradient(0, scanY - 24, 0, scanY + 24);
       scanGrad.addColorStop(0, "transparent");
-      scanGrad.addColorStop(0.5, isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.04)");
+      scanGrad.addColorStop(0.5, isDark ? "rgba(255, 255, 255, 0.065)" : "rgba(0, 0, 0, 0.045)");
       scanGrad.addColorStop(1, "transparent");
       ctx.fillStyle = scanGrad;
-      ctx.fillRect(0, scanlineY - 20, width, 40);
+      ctx.fillRect(0, scanY - 24, width, 48);
 
-      // 2. Smooth Cursor Ambient Spotlight
+      // 2. Cursor Ambient Spotlight
       if (mouse.active && mouse.x > 0 && mouse.y > 0) {
-        const spotGrad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 300);
-        spotGrad.addColorStop(0, isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.05)");
+        const spotGrad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 280);
+        spotGrad.addColorStop(0, isDark ? "rgba(255, 255, 255, 0.09)" : "rgba(0, 0, 0, 0.06)");
         spotGrad.addColorStop(1, "transparent");
         ctx.fillStyle = spotGrad;
         ctx.beginPath();
-        ctx.arc(mouse.x, mouse.y, 300, 0, Math.PI * 2);
+        ctx.arc(mouse.x, mouse.y, 280, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // 3. Update & Draw Particles and Inter-Node Connections
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-        p.pulse += 0.03;
+      // 3. Update & Draw Nodes
+      for (let i = 0; i < nodes.length; i++) {
+        const n = nodes[i];
+        n.pulse += 0.035;
 
         // Smooth sinusoidal drift
-        p.x += p.vx + Math.sin(time + p.pulse) * 0.25;
-        p.y += p.vy + Math.cos(time + p.pulse) * 0.25;
+        n.x += n.vx + Math.sin(time + n.pulse) * 0.22;
+        n.y += n.vy + Math.cos(time + n.pulse) * 0.22;
 
-        // Wrap around bounds
-        if (p.x < -30) p.x = width + 30;
-        if (p.x > width + 30) p.x = -30;
-        if (p.y < -30) p.y = height + 30;
-        if (p.y > height + 30) p.y = -30;
+        // Boundary wrap
+        if (n.x < -20) n.x = width + 20;
+        if (n.x > width + 20) n.x = -20;
+        if (n.y < -20) n.y = height + 20;
+        if (n.y > height + 20) n.y = -20;
 
-        // Check proximity to smooth cursor
+        // Proximity to cursor
         let mouseDist = 999;
         if (mouse.active) {
-          const dx = p.x - mouse.x;
-          const dy = p.y - mouse.y;
+          const dx = n.x - mouse.x;
+          const dy = n.y - mouse.y;
           mouseDist = Math.sqrt(dx * dx + dy * dy);
         }
-        const isNearCursor = mouseDist < 200;
-        const prox = isNearCursor ? 1 - mouseDist / 200 : 0;
+        const isNearCursor = mouseDist < 180;
+        const prox = isNearCursor ? 1 - mouseDist / 180 : 0;
 
-        // Draw Inter-node Links
-        for (let j = i + 1; j < particles.length; j++) {
-          const p2 = particles[j];
-          const dx = p.x - p2.x;
-          const dy = p.y - p2.y;
+        // Inter-node Connection Lines
+        for (let j = i + 1; j < nodes.length; j++) {
+          const n2 = nodes[j];
+          const dx = n.x - n2.x;
+          const dy = n.y - n2.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < 180) {
-            const alpha = (1 - dist / 180) * (isDark ? 0.22 : 0.16) + (prox * 0.15);
+          if (dist < 160) {
+            const alpha = (1 - dist / 160) * (isDark ? 0.22 : 0.16) + (prox * 0.18);
             ctx.strokeStyle = isDark
               ? `rgba(255, 255, 255, ${alpha})`
               : `rgba(0, 0, 0, ${alpha})`;
             ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
+            ctx.moveTo(n.x, n.y);
+            ctx.lineTo(n2.x, n2.y);
             ctx.stroke();
 
             // Spawn data packet
-            if (packets.length < maxPackets && Math.random() < 0.005) {
+            if (packets.length < maxPackets && Math.random() < 0.004) {
               packets.push({
-                sourceIndex: i,
-                targetIndex: j,
+                fromIndex: i,
+                toIndex: j,
                 progress: 0,
-                speed: 0.006 + Math.random() * 0.01,
+                speed: 0.007 + Math.random() * 0.01,
               });
             }
           }
         }
 
-        // Draw Particle Node (crisp diamond / square)
-        const nodeSize = p.size + prox * 2;
-        const nodeAlpha = isDark ? 0.65 + prox * 0.35 : 0.55 + prox * 0.4;
+        // Draw Node Square / Diamond
+        const nodeSize = n.size + prox * 2.5;
+        const nodeAlpha = isDark ? 0.7 + prox * 0.3 : 0.6 + prox * 0.35;
         ctx.fillStyle = isDark
           ? `rgba(255, 255, 255, ${nodeAlpha})`
           : `rgba(0, 0, 0, ${nodeAlpha})`;
+        ctx.fillRect(n.x - nodeSize / 2, n.y - nodeSize / 2, nodeSize, nodeSize);
 
-        ctx.fillRect(p.x - nodeSize / 2, p.y - nodeSize / 2, nodeSize, nodeSize);
-
-        // Glowing outer pulse ring
-        const ringRadius = nodeSize * 2.2 + Math.sin(p.pulse) * 3;
+        // Pulse ring around node
+        const ringRadius = nodeSize * 2.0 + Math.sin(n.pulse) * 3.5;
         ctx.strokeStyle = isDark
-          ? `rgba(255, 255, 255, ${0.18 + prox * 0.3})`
-          : `rgba(0, 0, 0, ${0.14 + prox * 0.25})`;
+          ? `rgba(255, 255, 255, ${0.16 + prox * 0.25})`
+          : `rgba(0, 0, 0, ${0.12 + prox * 0.2})`;
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, ringRadius, 0, Math.PI * 2);
+        ctx.arc(n.x, n.y, ringRadius, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Draw Monospace Telemetry Label
-        if (p.label) {
+        // Monospace Telemetry Label
+        if (n.label) {
           ctx.font = "bold 9px ui-monospace, SFMono-Regular, Menlo, monospace";
           const labelAlpha = isDark ? 0.45 + prox * 0.45 : 0.45 + prox * 0.45;
           ctx.fillStyle = isDark
             ? `rgba(255, 255, 255, ${labelAlpha})`
             : `rgba(0, 0, 0, ${labelAlpha})`;
-          ctx.fillText(`[${p.label}]`, p.x + 10, p.y + 3);
+          ctx.fillText(`[${n.label}]`, n.x + 9, n.y + 3);
         }
       }
 
@@ -224,8 +228,8 @@ export function AgenticBackground() {
         const pkt = packets[k];
         pkt.progress += pkt.speed;
 
-        const src = particles[pkt.sourceIndex];
-        const tgt = particles[pkt.targetIndex];
+        const src = nodes[pkt.fromIndex];
+        const tgt = nodes[pkt.toIndex];
 
         if (!src || !tgt || pkt.progress >= 1) {
           packets.splice(k, 1);
@@ -235,16 +239,15 @@ export function AgenticBackground() {
         const currX = src.x + (tgt.x - src.x) * pkt.progress;
         const currY = src.y + (tgt.y - src.y) * pkt.progress;
 
-        // Bright Glowing Data Packet Head
         ctx.fillStyle = isDark ? "rgba(255, 255, 255, 0.95)" : "rgba(0, 0, 0, 0.9)";
         ctx.fillRect(currX - 2.5, currY - 2.5, 5, 5);
 
-        // Glowing Trail
-        const trailProg = Math.max(0, pkt.progress - 0.08);
+        // Glowing packet trail
+        const trailProg = Math.max(0, pkt.progress - 0.09);
         const trailX = src.x + (tgt.x - src.x) * trailProg;
         const trailY = src.y + (tgt.y - src.y) * trailProg;
 
-        ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.4)";
+        ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.45)" : "rgba(0, 0, 0, 0.35)";
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(trailX, trailY);
@@ -252,20 +255,38 @@ export function AgenticBackground() {
         ctx.stroke();
       }
 
-      animId = requestAnimationFrame(draw);
+      // 5. Cursor Crosshair & Coordinate Readout
+      if (mouse.active && mouse.x > 0 && mouse.y > 0) {
+        ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.25)";
+        ctx.lineWidth = 1;
+
+        ctx.beginPath();
+        ctx.moveTo(mouse.x - 14, mouse.y);
+        ctx.lineTo(mouse.x + 14, mouse.y);
+        ctx.moveTo(mouse.x, mouse.y - 14);
+        ctx.lineTo(mouse.x, mouse.y + 14);
+        ctx.stroke();
+
+        ctx.font = "8px ui-monospace, SFMono-Regular, Menlo, monospace";
+        ctx.fillStyle = isDark ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)";
+        ctx.fillText(`LOC:[${Math.round(mouse.x)},${Math.round(mouse.y)}]`, mouse.x + 10, mouse.y - 8);
+      }
+
+      animId = requestAnimationFrame(loop);
     };
 
-    draw();
+    animId = requestAnimationFrame(loop);
 
     return () => {
+      isRunning = false;
       window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animId);
     };
-  }, [isClient]);
+  }, [mounted]);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none" aria-hidden="true">
-      {/* 1. Engineering Coordinate Grid with High Contrast */}
+      {/* 1. Engineering Coordinate Grid */}
       <div
         className="absolute inset-0 opacity-[0.08] dark:opacity-[0.12]"
         style={{
@@ -286,7 +307,7 @@ export function AgenticBackground() {
         }}
       />
 
-      {/* 3. Ambient Lighting Glow Orbs */}
+      {/* 3. Ambient Lighting Glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-foreground/[0.035] rounded-full blur-[120px] pointer-events-none" />
 
       {/* 4. Canvas Node Layer */}
