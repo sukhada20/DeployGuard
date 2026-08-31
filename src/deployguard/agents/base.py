@@ -11,7 +11,7 @@ Provides two base agent patterns:
 Model selection
 ---------------
 Set ``DEPLOYGUARD_MODEL_FAST`` to override the default fast model (gemini-3.5-flash).
-Set ``DEPLOYGUARD_MODEL_DECISION`` to override the decision model (gemini-2.5-pro).
+Set ``DEPLOYGUARD_MODEL_DECISION`` to override the decision model (gemini-3.5-pro).
 """
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ DEFAULT_MODEL_FAST: str = os.environ.get("DEPLOYGUARD_MODEL_FAST", "gemini-3.5-f
 """Default model for fast, high-throughput agents (monitoring, memory, postmortem)."""
 
 DEFAULT_MODEL_DECISION: str = os.environ.get(
-    "DEPLOYGUARD_MODEL_DECISION", "gemini-2.5-pro"
+    "DEPLOYGUARD_MODEL_DECISION", "gemini-3.5-pro"
 )
 """Default model for the decision agent (complex reasoning, low-latency tolerance)."""
 

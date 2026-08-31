@@ -15,7 +15,7 @@ This document outlines the architecture, IAM provisioning, infrastructure config
 │    • Ingress: HTTPS via Cloud Load Balancing + Cloud Armor                 │
 │                                                                            │
 │ 2. AGENT AI RUNTIME                                                        │
-│    • Vertex AI: Gemini 2.5 Flash (`gemini-2.5-flash`)                      │
+│    • Vertex AI: Gemini 3.5 Flash (`gemini-3.5-flash`)                      │
 │    • Vertex AI Model Armor: Prompt Injection & Sensitive Data Redaction    │
 │    • Google Agent Development Kit (ADK): Fleet orchestration               │
 │                                                                            │
@@ -122,7 +122,7 @@ GOOGLE_CLOUD_LOCATION=us-central1
 ENVIRONMENT=production
 
 # Model & Reasoning
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.5-flash
 MOCK_GCP=false
 USE_LIVE_GCP=true
 

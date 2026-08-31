@@ -47,7 +47,7 @@ const AGENTS = [
     id: "decision-agent",
     num: "03",
     name: "Decision Agent",
-    role: "Gemini 1.5 Pro Reasoning & 5-Gate Governance",
+    role: "Gemini 3.5 Pro Reasoning & 5-Gate Governance",
     icon: BrainCircuit,
     risk: "MEDIUM",
     riskVariant: "brutalist" as const,
