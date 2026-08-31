@@ -1,95 +1,21 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Activity,
-  Database,
-  BrainCircuit,
-  ShieldCheck,
-  RotateCcw,
-  FileText,
-  ArrowRight,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
-const TRACE_STEPS = [
-  {
-    step: 1,
-    actor: "Deploy Monitor",
-    icon: Activity,
-    title: "Anomaly Ingestion & Delta Computation",
-    summary:
-      "Deploy Monitor polls Google Cloud Monitoring every 1000ms. An HTTP 500 error rate spike to 0.145 (14.5x baseline) breaches the 1.25x statistical standard deviation threshold.",
-    evidence: "time_series.list response: checkout-service error_rate=0.145 (baseline=0.010, ratio=14.5x)",
-    badge: "STAGE 1",
-    badgeVariant: "destructive" as const,
-  },
-  {
-    step: 2,
-    actor: "Incident Memory",
-    icon: Database,
-    title: "Vertex AI Vector RAG Correlation",
-    summary:
-      "Incident Memory embeds the error signature using text-embedding-004 and searches Firestore vector store. Finds analogous incident inc-checkout-dep-9942 with 94.2% cosine similarity.",
-    evidence: "Vector similarity match: inc-checkout-dep-9942 (score=0.942, cause='DB pool exhaustion')",
-    badge: "STAGE 2",
-    badgeVariant: "brutalist" as const,
-  },
-  {
-    step: 3,
-    actor: "Decision Agent",
-    icon: BrainCircuit,
-    title: "Gemini 1.5 Pro Reasoning Core",
-    summary:
-      "Decision Agent constructs a multi-turn reasoning prompt containing telemetry history, rollout spec, and matched past postmortems. Gemini evaluates root cause and recommends rollback to v2.3.9.",
-    evidence: "Gemini 1.5 Pro output: 'Rollback recommended to v2.3.9 to restore pool headroom (confidence=0.98)'",
-    badge: "STAGE 3",
-    badgeVariant: "brutalist" as const,
-  },
-  {
-    step: 4,
-    actor: "Decision Agent",
-    icon: ShieldCheck,
-    title: "Deterministic 5-Rule Safety Policy Evaluation",
-    summary:
-      "Non-LLM deterministic code gates evaluate the LLM proposal. All 5 safety rules pass: single concurrent rollback, valid stable target v2.3.9, caller token valid, probe configured.",
-    evidence: "Policy evaluation: 5/5 rules PASS (no_concurrent_rollbacks, valid_target, iam_auth, delta_threshold, probes)",
-    badge: "STAGE 4",
-    badgeVariant: "success" as const,
-  },
-  {
-    step: 5,
-    actor: "Rollback Agent",
-    icon: RotateCcw,
-    title: "Cloud Deploy Execution & Traffic Shift",
-    summary:
-      "Rollback Agent dispatches an automated rollback command to Cloud Deploy via two-tier gateway. Traffic reverts 100% to release v2.3.9 on Cloud Run / GKE within 38.4 seconds.",
-    evidence: "clouddeploy.rollouts.create response: rollout-checkout-dep-rollback-001 STATE=SUCCEEDED",
-    badge: "STAGE 5",
-    badgeVariant: "success" as const,
-  },
-  {
-    step: 6,
-    actor: "Postmortem Agent",
-    icon: FileText,
-    title: "SRE Postmortem Document Synthesis",
-    summary:
-      "Postmortem Agent synthesizes a complete Markdown report with 5-Whys analysis, telemetry deltas, timeline breakdown, and preventative action items. Persisted to Firestore.",
-    evidence: "Firestore document created: /postmortems/pm-checkout-service-dep-9942.md (duration=38.4s)",
-    badge: "STAGE 6",
-    badgeVariant: "outline" as const,
-  },
-];
+import { getCanonicalTraceStages } from "@/lib/trace-stages";
+import { StageDetailHeader } from "@/components/traces/StageDetailHeader";
 
 export function GovernanceTraceWalkthrough() {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
-  const activeStep = TRACE_STEPS[activeStepIndex];
+  const steps = getCanonicalTraceStages();
+  const activeStep = steps[activeStepIndex] || steps[0];
   const Icon = activeStep.icon;
 
   return (
-    <section id="governance" className="py-16 px-4 lg:px-6 border-b border-border bg-transparent">
+    <section id="governance" className="py-16 px-4 lg:px-6 border-b border-border bg-transparent scroll-mt-24 sm:scroll-mt-28">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Section Header */}
         <div className="space-y-2 max-w-[65ch]">
@@ -103,7 +29,7 @@ export function GovernanceTraceWalkthrough() {
 
         {/* 6-Step Horizontal Progress Ribbon with Dots & Lines */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-          {TRACE_STEPS.map((s, idx) => {
+          {steps.map((s, idx) => {
             const isCurrent = idx === activeStepIndex;
             const isPassed = idx < activeStepIndex;
 
@@ -139,47 +65,13 @@ export function GovernanceTraceWalkthrough() {
 
         {/* Active Step Detailed Card without wrapping icon box */}
         <Card className="p-6 border-2 border-border bg-card space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
-            <div className="flex items-center gap-3">
-              <Icon className="w-6 h-6 text-foreground shrink-0" />
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-muted-foreground">STAGE {activeStep.step}:</span>
-                  <h3 className="font-mono font-bold text-base uppercase text-foreground">
-                    {activeStep.title}
-                  </h3>
-                  <Badge variant={activeStep.badgeVariant} className="text-[10px]">
-                    {activeStep.badge}
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground font-mono mt-0.5">
-                  Actor: <strong className="text-foreground">{activeStep.actor}</strong>
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={activeStepIndex === 0}
-                onClick={() => setActiveStepIndex((prev) => Math.max(0, prev - 1))}
-                className="h-8 text-xs font-mono border-border hover:border-foreground"
-              >
-                Previous
-              </Button>
-              <Button
-                variant="brutalistPrimary"
-                size="sm"
-                disabled={activeStepIndex === TRACE_STEPS.length - 1}
-                onClick={() => setActiveStepIndex((prev) => Math.min(TRACE_STEPS.length - 1, prev + 1))}
-                className="h-8 text-xs font-mono gap-1"
-              >
-                <span>Next Stage</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-          </div>
+          <StageDetailHeader
+            activeStep={activeStep}
+            activeStepIndex={activeStepIndex}
+            totalSteps={steps.length}
+            onPrev={() => setActiveStepIndex((prev) => Math.max(0, prev - 1))}
+            onNext={() => setActiveStepIndex((prev) => Math.min(steps.length - 1, prev + 1))}
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-7 space-y-3">

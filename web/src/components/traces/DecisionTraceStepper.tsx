@@ -2,14 +2,8 @@
 
 import React, { useState } from "react";
 import {
-  AlertTriangle,
-  Brain,
-  ShieldCheck,
   CheckCircle2,
   XCircle,
-  Database,
-  Lock,
-  RotateCcw,
   ArrowRight,
   ArrowLeft,
   Activity,
@@ -18,6 +12,8 @@ import { DecisionTrace } from "@/types/api";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getCanonicalTraceStages } from "@/lib/trace-stages";
+import { StageDetailHeader } from "./StageDetailHeader";
 
 interface DecisionTraceStepperProps {
   trace: DecisionTrace;
@@ -25,89 +21,7 @@ interface DecisionTraceStepperProps {
 
 export const DecisionTraceStepper: React.FC<DecisionTraceStepperProps> = ({ trace }) => {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
-
-  const steps = [
-    {
-      id: "evidence",
-      num: "01",
-      title: "Anomaly Evidence",
-      actor: "Deploy Monitor Agent",
-      icon: AlertTriangle,
-      badge: "TRIGGER SPIKE",
-      badgeVariant: "destructive" as const,
-      summary: trace.evidence_summary || "Deploy Monitor polled Cloud Monitoring and detected a statistical threshold deviation exceeding 1.25x baseline.",
-      evidence: `checkout-service HTTP 500 error rate spike to 0.145 (14.5x baseline). Baseline=0.010. Sampling=1000ms.`,
-      status: "PASS",
-    },
-    {
-      id: "memory",
-      num: "02",
-      title: "Historical Memory RAG",
-      actor: "Incident Memory Agent",
-      icon: Database,
-      badge: "VERTEX AI RAG",
-      badgeVariant: "brutalist" as const,
-      summary: "Incident Memory retrieved analogous past incident resolutions from Firestore vector embeddings with high cosine similarity.",
-      evidence: `Top match: inc-checkout-dep-9942 (Cosine similarity: 0.942). Prior resolution: Rollback to stable release.`,
-      status: "PASS",
-    },
-    {
-      id: "reasoning",
-      num: "03",
-      title: "Gemini 1.5 Pro Reasoning",
-      actor: "Decision Agent",
-      icon: Brain,
-      badge: "MODEL ARMOR SCREENED",
-      badgeVariant: "brutalist" as const,
-      summary: `Gemini 1.5 Pro synthesized current telemetry, historical postmortems, and target rollout configuration to decide: ${trace.decision.toUpperCase()}.`,
-      evidence: `Input screened for prompt injection via Model Armor. Confidence score: ${(trace.confidence * 100).toFixed(0)}%.`,
-      status: "PASS",
-    },
-    {
-      id: "policy",
-      num: "04",
-      title: "Deterministic Safety Gate",
-      actor: "Decision Agent",
-      icon: ShieldCheck,
-      badge: trace.policy_passed ? "5/5 RULES PASSED" : "POLICY BLOCKED",
-      badgeVariant: trace.policy_passed ? "success" as const : "destructive" as const,
-      summary: trace.authorization_reason || "All 5 deterministic non-LLM code safety gates evaluated and confirmed safe for automated rollback execution.",
-      checks: trace.policy_checks || {
-        no_concurrent_rollbacks: true,
-        iam_authorization_verified: true,
-        target_stable_version_valid: true,
-        error_delta_threshold_exceeded: true,
-        recovery_probe_readiness: true,
-      },
-      evidence: "Deterministic evaluation: 5/5 safety checks PASS. Zero hallucination risk.",
-      status: trace.policy_passed ? "PASS" : "FAIL",
-    },
-    {
-      id: "gateway",
-      num: "05",
-      title: "Gateway IAM Authorization",
-      actor: "Two-Tier Agent Gateway",
-      icon: Lock,
-      badge: trace.authorized ? "IAM AUTHORIZED" : "DENIED",
-      badgeVariant: trace.authorized ? "success" as const : "destructive" as const,
-      summary: "Agent Gateway verified caller service account identity (decision-agent-sa@gcp). Authorized sensitive single-use rollback tool token.",
-      evidence: "Sensitive tool authorized: clouddeploy.rollouts.create for caller decision-agent-sa@deployguard-fleet.iam.gserviceaccount.com.",
-      status: trace.authorized ? "PASS" : "FAIL",
-    },
-    {
-      id: "action",
-      num: "06",
-      title: "Autonomous Action & Recovery",
-      actor: "Rollback Agent",
-      icon: RotateCcw,
-      badge: trace.decision.toUpperCase(),
-      badgeVariant: "success" as const,
-      summary: "Dispatched automated Cloud Deploy rollback to target stable release v2.3.9. Traffic safely reverted and verified healthy within 38.4s.",
-      evidence: "clouddeploy.rollouts.create response: rollout-checkout-dep-rollback-001 STATE=SUCCEEDED. MTTR: 38.4s.",
-      status: "PASS",
-    },
-  ];
-
+  const steps = getCanonicalTraceStages(trace);
   const activeStep = steps[activeStepIndex] || steps[0];
   const Icon = activeStep.icon;
 
@@ -230,49 +144,13 @@ export const DecisionTraceStepper: React.FC<DecisionTraceStepperProps> = ({ trac
         <div className="lg:col-span-7 space-y-4">
           <Card className="p-6 sm:p-7 border-2 border-border bg-card/95 backdrop-blur-md shadow-md space-y-6">
             {/* Detail Card Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
-              <div className="flex items-center gap-3">
-                <Icon className="w-6 h-6 text-foreground shrink-0" />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-muted-foreground">STAGE {activeStep.num}:</span>
-                    <h3 className="font-mono font-bold text-base sm:text-lg uppercase text-foreground">
-                      {activeStep.title}
-                    </h3>
-                    <Badge variant={activeStep.badgeVariant} className="text-xs font-mono font-bold">
-                      {activeStep.badge}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground font-mono mt-0.5">
-                    Executing Agent: <strong className="text-foreground">{activeStep.actor}</strong>
-                  </p>
-                </div>
-              </div>
-
-              {/* Navigation Controls */}
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={activeStepIndex === 0}
-                  onClick={() => setActiveStepIndex((prev) => Math.max(0, prev - 1))}
-                  className="h-8 text-xs font-mono font-bold gap-1 border-border hover:border-foreground"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Prev</span>
-                </Button>
-                <Button
-                  variant="brutalistPrimary"
-                  size="sm"
-                  disabled={activeStepIndex === steps.length - 1}
-                  onClick={() => setActiveStepIndex((prev) => Math.min(steps.length - 1, prev + 1))}
-                  className="h-8 text-xs font-mono font-bold gap-1"
-                >
-                  <span>Next Stage</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            </div>
+            <StageDetailHeader
+              activeStep={activeStep}
+              activeStepIndex={activeStepIndex}
+              totalSteps={steps.length}
+              onPrev={() => setActiveStepIndex((prev) => Math.max(0, prev - 1))}
+              onNext={() => setActiveStepIndex((prev) => Math.min(steps.length - 1, prev + 1))}
+            />
 
             {/* Execution Summary */}
             <div className="space-y-2">
